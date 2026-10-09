@@ -1,0 +1,2666 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tutorial: Gestor de contraseñas de Google</title>
+<meta name="description" content="Tutorial completo para principiantes sobre el Gestor de contraseñas de Google.">
+<style>
+/* ============================================================
+   VARIABLES Y BASE
+   ============================================================ */
+:root{
+  --bg:#0a0e1a;
+  --card:#0f172a;
+  --card-2:#0b1220;
+  --accent:#1e3a5f;
+  --text:#e6edf7;
+  --muted:#94a3b8;
+  --border:#1e293b;
+  --link:#7dd3fc;
+  --code-bg:#0b1220;
+  --ok:#22c55e;
+  --warn:#f59e0b;
+  --bad:#ef4444;
+  --topbar:rgba(10,14,26,.94);
+  --shadow:0 10px 30px rgba(0,0,0,.35);
+  --hl:#facc15;
+}
+body.light{
+  --bg:#eef2f7;
+  --card:#ffffff;
+  --card-2:#f8fafc;
+  --accent:#dbeafe;
+  --text:#0f172a;
+  --muted:#475569;
+  --border:#cbd5e1;
+  --link:#0369a1;
+  --code-bg:#f1f5f9;
+  --topbar:rgba(238,242,247,.95);
+  --shadow:0 8px 22px rgba(15,23,42,.10);
+  --hl:#fde68a;
+}
+
+*{box-sizing:border-box;}
+html{font-size:16px;-webkit-text-size-adjust:100%;}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  font-size:1rem;
+  line-height:1.65;
+  transition:background .25s ease,color .25s ease;
+}
+img,svg{max-width:100%;}
+a{color:var(--link);}
+a:hover{text-decoration:none;}
+h1,h2,h3,h4{line-height:1.25;margin:0 0 .6rem;font-weight:700;}
+h1{font-size:1.9rem;letter-spacing:-.02em;}
+h2{font-size:1.4rem;}
+h3{font-size:1.12rem;}
+h4{font-size:1rem;}
+p{margin:0 0 .9rem;}
+ul,ol{margin:0 0 .9rem;padding-left:1.25rem;}
+li{margin:.25rem 0;}
+code{
+  background:var(--code-bg);
+  border:1px solid var(--border);
+  border-radius:6px;
+  padding:.1em .38em;
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:.9em;
+  word-break:break-word;
+}
+pre{
+  background:var(--code-bg);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:.85rem 1rem;
+  overflow-x:auto;
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:.86rem;
+  line-height:1.5;
+}
+pre code{background:none;border:none;padding:0;}
+
+/* ============================================================
+   BARRA SUPERIOR PEGAJOSA
+   ============================================================ */
+.topbar{
+  position:sticky;
+  top:0;
+  z-index:60;
+  background:var(--topbar);
+  -webkit-backdrop-filter:blur(10px);
+  backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--border);
+}
+.progress-bar{
+  height:3px;
+  width:100%;
+  background:transparent;
+}
+.progress-bar > div{
+  height:100%;
+  width:0%;
+  background:linear-gradient(90deg,#38bdf8,#2563eb);
+  transition:width .12s linear;
+}
+.toolbar{
+  max-width:1000px;
+  margin:0 auto;
+  padding:.5rem .75rem .35rem;
+}
+.toolbar-row{
+  display:flex;
+  gap:.5rem;
+  align-items:center;
+  flex-wrap:wrap;
+}
+.search-box{
+  position:relative;
+  flex:1 1 190px;
+  min-width:150px;
+  display:flex;
+  align-items:center;
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:0 .55rem;
+}
+.search-icon{font-size:.85rem;opacity:.7;}
+.search-box input{
+  flex:1;
+  background:transparent;
+  border:none;
+  outline:none;
+  color:var(--text);
+  font-size:.92rem;
+  padding:.5rem .4rem;
+  font-family:inherit;
+  min-width:0;
+}
+.search-count{
+  font-size:.72rem;
+  color:var(--muted);
+  white-space:nowrap;
+}
+.tools{display:flex;gap:.35rem;flex-wrap:wrap;}
+.btn{
+  background:var(--card);
+  color:var(--text);
+  border:1px solid var(--border);
+  border-radius:9px;
+  padding:.45rem .6rem;
+  font-size:.85rem;
+  font-family:inherit;
+  cursor:pointer;
+  line-height:1.1;
+  transition:background .18s,border-color .18s,transform .1s;
+}
+.btn:hover{background:var(--accent);border-color:var(--accent);}
+.btn:active{transform:scale(.96);}
+.btn:focus-visible{outline:2px solid var(--link);outline-offset:2px;}
+
+/* ============================================================
+   PESTAÑAS
+   ============================================================ */
+.tabs{
+  max-width:1000px;
+  margin:0 auto;
+  padding:0 .5rem;
+  display:flex;
+  gap:.3rem;
+  overflow-x:auto;
+  scrollbar-width:thin;
+}
+.tab{
+  flex:0 0 auto;
+  background:transparent;
+  border:none;
+  border-bottom:3px solid transparent;
+  color:var(--muted);
+  font-family:inherit;
+  font-size:.8rem;
+  font-weight:700;
+  letter-spacing:.04em;
+  padding:.55rem .7rem;
+  cursor:pointer;
+  white-space:nowrap;
+  transition:color .18s,border-color .18s;
+}
+.tab:hover{color:var(--text);}
+.tab.active{
+  color:var(--link);
+  border-bottom-color:#38bdf8;
+}
+.tab:focus-visible{outline:2px solid var(--link);outline-offset:-3px;border-radius:6px;}
+
+/* ============================================================
+   CONTENEDOR Y PANELES
+   ============================================================ */
+.container{
+  max-width:1000px;
+  margin:0 auto;
+  padding:1rem .85rem 4rem;
+}
+.panel{display:none;}
+.panel.active{display:block;animation:fade .28s ease;}
+@keyframes fade{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+.panel-title{
+  font-size:.78rem;
+  letter-spacing:.16em;
+  text-transform:uppercase;
+  color:var(--muted);
+  border-bottom:1px solid var(--border);
+  padding-bottom:.45rem;
+  margin:0 0 1rem;
+  font-weight:700;
+}
+
+/* ============================================================
+   SVG HERO
+   ============================================================ */
+.hero-svg-mount{
+  width:100%;
+  margin:0 0 .9rem;
+  border-radius:18px;
+  overflow:hidden;
+  border:1px solid var(--border);
+  background:var(--card);
+}
+.hero-svg-mount svg{display:block;width:100%;height:auto;}
+.hero-svg-mount img{display:block;width:100%;height:auto;}
+.hero-caption{
+  font-size:.82rem;
+  color:var(--muted);
+  text-align:center;
+  margin:-.2rem 0 1.1rem;
+}
+
+/* ============================================================
+   TARJETAS
+   ============================================================ */
+.card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:1rem 1.05rem;
+  margin:0 0 1rem;
+  box-shadow:var(--shadow);
+}
+.card h2,.card h3{margin-top:0;}
+.grid{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:0;
+}
+@media(min-width:760px){
+  .grid.two{grid-template-columns:1fr 1fr;gap:0 1rem;}
+}
+
+.lead{
+  font-size:1.05rem;
+  color:var(--muted);
+  margin-bottom:1.1rem;
+}
+.tag{
+  display:inline-block;
+  font-size:.7rem;
+  font-weight:700;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  padding:.2rem .55rem;
+  border-radius:999px;
+  background:var(--accent);
+  color:var(--text);
+  margin-bottom:.5rem;
+}
+.callout{
+  border-left:4px solid #38bdf8;
+  background:var(--card-2);
+  border-radius:0 12px 12px 0;
+  padding:.75rem .95rem;
+  margin:0 0 1rem;
+  font-size:.94rem;
+}
+.callout.warn{border-left-color:var(--warn);}
+.callout.bad{border-left-color:var(--bad);}
+.callout.ok{border-left-color:var(--ok);}
+.callout p:last-child{margin-bottom:0;}
+
+/* ============================================================
+   PASOS
+   ============================================================ */
+.steps{
+  list-style:none;
+  padding:0;
+  margin:0 0 1rem;
+  counter-reset:step;
+}
+.steps > li{
+  position:relative;
+  background:var(--card-2);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:.75rem .85rem .75rem 3rem;
+  margin:0 0 .6rem;
+  counter-increment:step;
+  font-size:.95rem;
+}
+.steps > li::before{
+  content:counter(step);
+  position:absolute;
+  left:.7rem;
+  top:.72rem;
+  width:1.6rem;
+  height:1.6rem;
+  border-radius:50%;
+  background:var(--accent);
+  color:#dbeafe;
+  font-size:.8rem;
+  font-weight:700;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+body.light .steps > li::before{color:#0f172a;}
+
+/* ============================================================
+   DESPLEGABLES
+   ============================================================ */
+details{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:12px;
+  margin:0 0 .75rem;
+  overflow:hidden;
+}
+details[open]{box-shadow:var(--shadow);}
+summary{
+  cursor:pointer;
+  padding:.8rem .95rem;
+  font-weight:700;
+  font-size:.98rem;
+  list-style:none;
+  display:flex;
+  align-items:center;
+  gap:.55rem;
+  user-select:none;
+}
+summary::-webkit-details-marker{display:none;}
+summary::before{
+  content:"▸";
+  color:var(--link);
+  font-size:.9rem;
+  transition:transform .2s;
+  flex:0 0 auto;
+}
+details[open] > summary::before{transform:rotate(90deg);}
+summary:hover{background:var(--accent);}
+.details-body{
+  padding:0 .95rem .9rem;
+  border-top:1px solid var(--border);
+  font-size:.95rem;
+}
+.details-body > *:first-child{margin-top:.8rem;}
+
+/* ============================================================
+   TABLAS
+   ============================================================ */
+.table-wrap{
+  overflow-x:auto;
+  border:1px solid var(--border);
+  border-radius:12px;
+  margin:0 0 1.1rem;
+  background:var(--card);
+}
+table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:.88rem;
+  min-width:420px;
+}
+th,td{
+  text-align:left;
+  padding:.6rem .7rem;
+  border-bottom:1px solid var(--border);
+  vertical-align:top;
+}
+th{
+  background:var(--accent);
+  color:#dbeafe;
+  font-size:.78rem;
+  letter-spacing:.05em;
+  text-transform:uppercase;
+  position:sticky;
+  top:0;
+}
+body.light th{color:#0f172a;}
+tr:last-child td{border-bottom:none;}
+
+/* ============================================================
+   DIAGRAMA DE FLUJO
+   ============================================================ */
+.flow{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:.25rem;
+  margin:0 0 1.1rem;
+  padding:1rem .6rem;
+  background:var(--card-2);
+  border:1px solid var(--border);
+  border-radius:12px;
+}
+.flow-node{
+  background:var(--accent);
+  border:1px solid #2b4f7a;
+  border-radius:10px;
+  padding:.45rem .9rem;
+  font-size:.86rem;
+  font-weight:600;
+  text-align:center;
+  color:var(--text);
+  max-width:100%;
+}
+body.light .flow-node{color:#0f172a;}
+.flow-arrow{color:var(--link);font-size:1rem;line-height:1;}
+
+/* ============================================================
+   CHECKLIST
+   ============================================================ */
+.check-list{list-style:none;padding:0;margin:0 0 1rem;}
+.check{
+  display:flex;
+  gap:.6rem;
+  align-items:flex-start;
+  background:var(--card-2);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:.6rem .7rem;
+  margin:0 0 .45rem;
+  font-size:.92rem;
+  cursor:pointer;
+}
+.check input{
+  margin:.28rem 0 0;
+  width:1.05rem;
+  height:1.05rem;
+  accent-color:#38bdf8;
+  flex:0 0 auto;
+  cursor:pointer;
+}
+.check input:checked + span{color:var(--muted);text-decoration:line-through;}
+.check-progress{
+  font-size:.85rem;
+  color:var(--muted);
+  margin:0 0 .8rem;
+}
+
+/* ============================================================
+   BOTONES COPIAR
+   ============================================================ */
+.copy-wrap{
+  display:inline-flex;
+  align-items:center;
+  gap:.4rem;
+  flex-wrap:wrap;
+  margin:.15rem 0;
+}
+.copyBtn{
+  background:var(--accent);
+  color:#dbeafe;
+  border:1px solid #2b4f7a;
+  border-radius:8px;
+  font-size:.7rem;
+  font-weight:700;
+  letter-spacing:.06em;
+  padding:.28rem .55rem;
+  cursor:pointer;
+  font-family:inherit;
+  transition:background .18s;
+}
+body.light .copyBtn{color:#0f172a;}
+.copyBtn:hover{background:#2b4f7a;}
+
+/* ============================================================
+   CORRECTO / INCORRECTO
+   ============================================================ */
+.compare{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:.7rem;
+  margin:0 0 1rem;
+}
+@media(min-width:700px){.compare{grid-template-columns:1fr 1fr;}}
+.compare > div{
+  border-radius:12px;
+  padding:.75rem .9rem;
+  font-size:.92rem;
+  border:1px solid var(--border);
+}
+.compare .good{background:rgba(34,197,94,.10);border-left:4px solid var(--ok);}
+.compare .bad{background:rgba(239,68,68,.10);border-left:4px solid var(--bad);}
+.compare h4{margin:0 0 .4rem;font-size:.85rem;letter-spacing:.06em;text-transform:uppercase;}
+.compare ul{margin:0;padding-left:1.1rem;}
+
+/* ============================================================
+   RESULTADO / BADGES
+   ============================================================ */
+.badge{
+  display:inline-block;
+  font-size:.72rem;
+  font-weight:700;
+  padding:.15rem .5rem;
+  border-radius:999px;
+  border:1px solid var(--border);
+  background:var(--card-2);
+  color:var(--muted);
+  margin:0 .25rem .25rem 0;
+}
+.badge.ok{color:var(--ok);border-color:var(--ok);}
+.badge.warn{color:var(--warn);border-color:var(--warn);}
+.badge.bad{color:var(--bad);border-color:var(--bad);}
+
+.result{
+  background:var(--card-2);
+  border:1px dashed var(--border);
+  border-radius:10px;
+  padding:.6rem .8rem;
+  font-size:.9rem;
+  margin:.6rem 0 0;
+}
+.result strong{color:var(--link);}
+
+/* ============================================================
+   AUTOR
+   ============================================================ */
+.author-card{
+  text-align:center;
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:1.4rem 1rem;
+  box-shadow:var(--shadow);
+  margin:0 0 1rem;
+}
+.author-name{
+  font-size:2rem;
+  font-weight:800;
+  letter-spacing:-.02em;
+  margin:0 0 .2rem;
+  color:var(--link);
+}
+.author-role{
+  font-size:.95rem;
+  color:var(--muted);
+  margin:0 0 1rem;
+  letter-spacing:.05em;
+}
+.meta-row{
+  display:flex;
+  flex-wrap:wrap;
+  gap:.5rem;
+  justify-content:center;
+}
+.meta-box{
+  background:var(--card-2);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:.5rem .8rem;
+  font-size:.82rem;
+  min-width:150px;
+}
+.meta-box span{display:block;color:var(--muted);font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;}
+.meta-box strong{font-size:.9rem;}
+
+/* ============================================================
+   VOLVER ARRIBA
+   ============================================================ */
+.to-top{
+  position:fixed;
+  right:1rem;
+  bottom:1rem;
+  width:44px;
+  height:44px;
+  border-radius:50%;
+  border:1px solid var(--border);
+  background:var(--card);
+  color:var(--text);
+  font-size:1.1rem;
+  cursor:pointer;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  box-shadow:var(--shadow);
+  z-index:70;
+}
+.to-top.show{display:flex;}
+.to-top:hover{background:var(--accent);}
+
+/* ============================================================
+   AVISO DE IMPRESIÓN
+   ============================================================ */
+.toast{
+  position:fixed;
+  left:50%;
+  bottom:1rem;
+  transform:translateX(-50%) translateY(150%);
+  background:var(--card);
+  border:1px solid var(--warn);
+  color:var(--text);
+  border-radius:12px;
+  padding:.7rem .9rem;
+  font-size:.85rem;
+  max-width:min(560px,92vw);
+  box-shadow:var(--shadow);
+  z-index:90;
+  transition:transform .3s ease;
+}
+.toast.show{transform:translateX(-50%) translateY(0);}
+
+/* ============================================================
+   RESALTADO DE BÚSQUEDA
+   ============================================================ */
+mark.search-hl{
+  background:var(--hl);
+  color:#111827;
+  border-radius:3px;
+  padding:0 .1em;
+}
+
+/* ============================================================
+   IMPRESIÓN / PDF
+   ============================================================ */
+@media print{
+  @page{size:A4 portrait;margin:14mm 12mm;}
+
+  html,body{
+    background:#ffffff !important;
+    color:#000000 !important;
+    padding:0 !important;
+    margin:0 !important;
+    font-size:11pt !important;
+    line-height:1.45 !important;
+  }
+
+  .topbar,
+  .toolbar,
+  .tabs,
+  .to-top,
+  .copyBtn,
+  .progress-bar,
+  .search-box,
+  .tools,
+  .toast,
+  nav{display:none !important;}
+
+  mark.search-hl{
+    background:transparent !important;
+    color:inherit !important;
+    padding:0 !important;
+  }
+
+  .panel{
+    display:block !important;
+    page-break-after:auto !important;
+    break-after:auto !important;
+    animation:none !important;
+    opacity:1 !important;
+    transform:none !important;
+  }
+
+  .container{
+    max-width:none !important;
+    padding:0 !important;
+    margin:0 !important;
+  }
+
+  .hero-svg-mount{
+    display:block !important;
+    border:1px solid #999999 !important;
+    background:#ffffff !important;
+    margin:0 0 6mm 0 !important;
+    box-shadow:none !important;
+  }
+  .hero-svg-mount svg,
+  .hero-svg-mount img{width:100% !important;height:auto !important;}
+
+  .card,
+  details,
+  .table-wrap,
+  .flow,
+  .callout,
+  .result,
+  .author-card,
+  .meta-box,
+  .check,
+  .steps > li{
+    background:#ffffff !important;
+    color:#000000 !important;
+    border:1px solid #999999 !important;
+    box-shadow:none !important;
+    break-inside:avoid;
+    page-break-inside:avoid;
+  }
+
+  h1,h2,h3,h4,p,li,td,th,span,strong,em,small,summary,div{
+    color:#000000 !important;
+  }
+  h1{font-size:20pt !important;}
+  h2{font-size:15pt !important;}
+  h3{font-size:12.5pt !important;}
+  h4{font-size:11pt !important;}
+  .panel-title{font-size:8pt !important;color:#444444 !important;border-bottom:1px solid #999999 !important;}
+  .lead{color:#333333 !important;}
+
+  a{color:#000000 !important;text-decoration:underline !important;}
+
+  pre,code{
+    background:#f2f2f2 !important;
+    color:#000000 !important;
+    border:1px solid #bbbbbb !important;
+    overflow:visible !important;
+    white-space:pre-wrap !important;
+    word-break:break-word !important;
+  }
+
+  table{
+    overflow:visible !important;
+    width:100% !important;
+    border-collapse:collapse !important;
+    min-width:0 !important;
+  }
+  th{
+    background:#e5e5e5 !important;
+    color:#000000 !important;
+    border:1px solid #999999 !important;
+    position:static !important;
+  }
+  td{border:1px solid #999999 !important;}
+  .table-wrap{overflow:visible !important;}
+
+  details > summary{
+    background:#ffffff !important;
+    color:#000000 !important;
+    border-bottom:1px solid #999999 !important;
+  }
+  details > summary::before{content:"•";color:#000000 !important;}
+
+  .tag,.badge{
+    background:#ffffff !important;
+    color:#000000 !important;
+    border:1px solid #999999 !important;
+  }
+
+  .compare .good,
+  .compare .bad{
+    background:#ffffff !important;
+    border:1px solid #999999 !important;
+  }
+
+  .flow-node{
+    background:#ffffff !important;
+    color:#000000 !important;
+    border:1px solid #999999 !important;
+  }
+  .flow-arrow{color:#000000 !important;}
+
+  .check input{accent-color:#000000 !important;}
+  .check input:checked + span{color:#000000 !important;text-decoration:none !important;}
+
+  .author-name{color:#000000 !important;}
+}
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     SVG FUENTE ÚNICO (se extrae como plantilla y se elimina del DOM)
+     ============================================================ -->
+<svg id="svgHeroSource" width="0" height="0" aria-hidden="true" focusable="false"
+     style="position:absolute;width:0;height:0;overflow:hidden">
+  <defs>
+    <linearGradient id="gBg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#1e3a5f"/>
+    </linearGradient>
+    <linearGradient id="gAcc" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#7dd3fc"/>
+      <stop offset="55%" stop-color="#38bdf8"/>
+      <stop offset="100%" stop-color="#2563eb"/>
+    </linearGradient>
+    <filter id="fGlow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="5" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <g id="svgHero">
+    <!-- Fondo -->
+    <rect x="3" y="3" width="814" height="254" rx="20" fill="url(#gBg)" stroke="#1e3a5f" stroke-width="2"/>
+
+    <!-- Panel izquierdo: lista de contraseñas guardadas -->
+    <g>
+      <rect x="42" y="50" width="212" height="150" rx="14" fill="#0b1220" stroke="#1e3a5f" stroke-width="2"/>
+      <rect x="42" y="50" width="212" height="32" rx="14" fill="#1e3a5f"/>
+      <rect x="42" y="66" width="212" height="16" fill="#1e3a5f"/>
+      <circle cx="60" cy="66" r="4" fill="#38bdf8"/>
+      <circle cx="74" cy="66" r="4" fill="#f59e0b"/>
+      <circle cx="88" cy="66" r="4" fill="#22c55e"/>
+      <text x="148" y="71" font-size="11" fill="#bfdbfe" text-anchor="middle"
+            font-family="system-ui,-apple-system,Segoe UI,Roboto,sans-serif">Contraseñas guardadas</text>
+
+      <g>
+        <rect x="56" y="94" width="184" height="26" rx="8" fill="#0f172a" stroke="#1e293b" stroke-width="1"/>
+        <circle cx="72" cy="107" r="7" fill="#1e3a5f"/>
+        <rect x="86" y="102" width="58" height="9" rx="4.5" fill="#334155"/>
+        <rect x="152" y="102" width="74" height="9" rx="4.5" fill="#38bdf8" opacity="0.5">
+          <animate attributeName="opacity" values="0.25;0.9;0.25" dur="2.6s" begin="0s" repeatCount="indefinite"/>
+        </rect>
+      </g>
+      <g>
+        <rect x="56" y="124" width="184" height="26" rx="8" fill="#0f172a" stroke="#1e293b" stroke-width="1"/>
+        <circle cx="72" cy="137" r="7" fill="#1e3a5f"/>
+        <rect x="86" y="132" width="70" height="9" rx="4.5" fill="#334155"/>
+        <rect x="164" y="132" width="62" height="9" rx="4.5" fill="#38bdf8" opacity="0.5">
+          <animate attributeName="opacity" values="0.25;0.9;0.25" dur="2.6s" begin="0.45s" repeatCount="indefinite"/>
+        </rect>
+      </g>
+      <g>
+        <rect x="56" y="154" width="184" height="26" rx="8" fill="#0f172a" stroke="#1e293b" stroke-width="1"/>
+        <circle cx="72" cy="167" r="7" fill="#1e3a5f"/>
+        <rect x="86" y="162" width="52" height="9" rx="4.5" fill="#334155"/>
+        <rect x="146" y="162" width="80" height="9" rx="4.5" fill="#38bdf8" opacity="0.5">
+          <animate attributeName="opacity" values="0.25;0.9;0.25" dur="2.6s" begin="0.9s" repeatCount="indefinite"/>
+        </rect>
+      </g>
+    </g>
+
+    <text x="148" y="228" font-size="12" fill="#94a3b8" text-anchor="middle"
+          font-family="system-ui,-apple-system,Segoe UI,Roboto,sans-serif">Tus contraseñas</text>
+
+    <!-- Flujo central: datos cifrados viajando -->
+    <line x1="272" y1="125" x2="566" y2="125" stroke="#38bdf8" stroke-width="2"
+          stroke-dasharray="6 8" opacity="0.35">
+      <animate attributeName="stroke-dashoffset" values="0;-28" dur="1.4s" repeatCount="indefinite"/>
+    </line>
+
+    <circle cx="272" cy="125" r="7" fill="#38bdf8" filter="url(#fGlow)">
+      <animate attributeName="cx" values="272;566" dur="2.2s" begin="0s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0;1;1;0" dur="2.2s" begin="0s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="272" cy="125" r="7" fill="#38bdf8" filter="url(#fGlow)">
+      <animate attributeName="cx" values="272;566" dur="2.2s" begin="0.73s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0;1;1;0" dur="2.2s" begin="0.73s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="272" cy="125" r="7" fill="#38bdf8" filter="url(#fGlow)">
+      <animate attributeName="cx" values="272;566" dur="2.2s" begin="1.46s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0;1;1;0" dur="2.2s" begin="1.46s" repeatCount="indefinite"/>
+    </circle>
+
+    <text x="419" y="160" font-size="12" fill="#7dd3fc" text-anchor="middle"
+          font-family="system-ui,-apple-system,Segoe UI,Roboto,sans-serif">Cifrado y sincronización</text>
+
+    <!-- Escudo de seguridad -->
+    <g>
+      <circle cx="662" cy="126" r="72" fill="none" stroke="#38bdf8" stroke-width="2"
+              stroke-dasharray="7 11" opacity="0.45">
+        <animateTransform attributeName="transform" type="rotate"
+                          from="0 662 126" to="360 662 126" dur="20s" repeatCount="indefinite"/>
+      </circle>
+
+      <circle cx="662" cy="126" r="58" fill="#38bdf8" opacity="0.10">
+        <animate attributeName="r" values="52;66;52" dur="3.6s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0.06;0.16;0.06" dur="3.6s" repeatCount="indefinite"/>
+      </circle>
+
+      <path d="M662 46 L716 68 V122 C716 164 692 190 662 202 C632 190 608 164 608 122 V68 Z"
+            fill="#0b1220" stroke="url(#gAcc)" stroke-width="3"/>
+
+      <g>
+        <rect x="640" y="106" width="44" height="34" rx="7" fill="url(#gAcc)"/>
+        <path d="M650 106 V96 A12 12 0 0 1 674 96 V106" fill="none" stroke="#7dd3fc"
+              stroke-width="5" stroke-linecap="round"/>
+        <circle cx="662" cy="120" r="5" fill="#0b1220"/>
+        <rect x="660" y="120" width="4" height="12" rx="2" fill="#0b1220"/>
+      </g>
+    </g>
+
+    <text x="662" y="232" font-size="12" fill="#94a3b8" text-anchor="middle"
+          font-family="system-ui,-apple-system,Segoe UI,Roboto,sans-serif">Acceso seguro</text>
+  </g>
+</svg>
+
+<!-- ============================================================
+     BARRA SUPERIOR
+     ============================================================ -->
+<div class="topbar">
+  <div class="progress-bar"><div id="progressFill"></div></div>
+
+  <div class="toolbar">
+    <div class="toolbar-row">
+      <div class="search-box">
+        <span class="search-icon" aria-hidden="true">🔍</span>
+        <input type="search" id="searchInput" placeholder="Buscar en el tutorial…"
+               aria-label="Buscar en el tutorial" autocomplete="off">
+        <span class="search-count" id="searchCount"></span>
+      </div>
+      <div class="tools">
+        <button class="btn" id="fontMinus" type="button" title="Reducir el tamaño del texto" aria-label="Reducir el tamaño del texto">A−</button>
+        <button class="btn" id="fontPlus" type="button" title="Aumentar el tamaño del texto" aria-label="Aumentar el tamaño del texto">A+</button>
+        <button class="btn" id="themeBtn" type="button" title="Cambiar entre modo oscuro y claro" aria-label="Cambiar entre modo oscuro y claro">🌙</button>
+        <button class="btn" id="printBtn" type="button" title="Imprimir o guardar como PDF" aria-label="Imprimir o guardar como PDF">🖨️</button>
+      </div>
+    </div>
+  </div>
+
+  <nav class="tabs" role="tablist" aria-label="Secciones del tutorial">
+    <button class="tab active" role="tab" data-target="p-inicio" aria-selected="true" type="button">INICIO</button>
+    <button class="tab" role="tab" data-target="p-conceptos" aria-selected="false" type="button">CONCEPTOS</button>
+    <button class="tab" role="tab" data-target="p-procedimiento" aria-selected="false" type="button">PROCEDIMIENTO</button>
+    <button class="tab" role="tab" data-target="p-practica" aria-selected="false" type="button">PRÁCTICA</button>
+    <button class="tab" role="tab" data-target="p-errores" aria-selected="false" type="button">ERRORES</button>
+    <button class="tab" role="tab" data-target="p-resumen" aria-selected="false" type="button">RESUMEN</button>
+    <button class="tab" role="tab" data-target="p-fuentes" aria-selected="false" type="button">FUENTES</button>
+    <button class="tab" role="tab" data-target="p-creditos" aria-selected="false" type="button">CRÉDITOS</button>
+  </nav>
+</div>
+
+<main class="container">
+
+<!-- ============================================================
+     PANEL: INICIO
+     ============================================================ -->
+<section class="panel active" id="p-inicio" role="tabpanel" aria-label="Inicio">
+
+  <div class="hero-svg-mount" data-svg-hero="true" role="img"
+       aria-label="Animación: una lista de contraseñas guardadas viaja cifrada hasta un escudo de seguridad que la protege"></div>
+
+  <h1>Gestor de contraseñas de Google</h1>
+  <p class="lead">Tutorial completo para principiantes: qué es, para qué sirve y cómo usarlo paso a paso, desde cero.</p>
+
+  <div class="grid two">
+    <article class="card">
+      <span class="tag">Qué vas a aprender</span>
+      <h2>En 20 minutos sabrás usarlo tú solo</h2>
+      <ul>
+        <li>Qué problema resuelve el Gestor de contraseñas de Google.</li>
+        <li>Cómo abrirlo desde Android, desde Chrome en el ordenador y desde la web.</li>
+        <li>Cómo guardar, consultar, buscar, modificar y eliminar contraseñas.</li>
+        <li>Cómo usar la comprobación de contraseñas y entender sus avisos.</li>
+        <li>Cómo resolver los problemas más habituales.</li>
+      </ul>
+    </article>
+
+    <article class="card">
+      <span class="tag">Para qué sirve</span>
+      <h2>Deja de memorizar contraseñas</h2>
+      <p>El gestor crea contraseñas seguras y únicas por ti, las guarda cifradas y las rellena automáticamente cuando las necesitas.</p>
+      <p>Según Google: <em>«Google Password Manager te ayuda a usar contraseñas seguras y únicas para todas tus cuentas online»</em>.</p>
+      <p style="margin-bottom:0">Tú solo tienes que recordar <strong>una cosa</strong>: la contraseña de tu cuenta de Google.</p>
+    </article>
+
+    <article class="card">
+      <span class="tag">Antes de empezar</span>
+      <h2>Qué necesitas</h2>
+      <ul>
+        <li>Una <strong>cuenta de Google</strong> (por ejemplo, <code>tunombre@gmail.com</code>).</li>
+        <li>Un dispositivo con <strong>Android</strong> o un ordenador con <strong>Chrome</strong>.</li>
+        <li>Unos <strong>20 minutos</strong> y ganas de probar.</li>
+      </ul>
+      <div class="callout warn">
+        <p><strong>Importante:</strong> sin cuenta de Google puedes guardar contraseñas solo en el dispositivo, pero <strong>no habrá sincronización</strong> entre tus aparatos.</p>
+      </div>
+    </article>
+
+    <article class="card">
+      <span class="tag">Objetivos</span>
+      <h2>Al terminar este tutorial podrás…</h2>
+      <ul>
+        <li>Explicar con tus palabras qué hace el gestor y qué no hace.</li>
+        <li>Acceder a él por las tres vías disponibles.</li>
+        <li>Guardar una contraseña nueva y usarla sin escribirla.</li>
+        <li>Auditar tus contraseñas y corregir las que estén mal.</li>
+        <li>Repetir todo el proceso sin ayuda.</li>
+      </ul>
+    </article>
+  </div>
+
+  <article class="card">
+    <span class="tag">Cómo usar este tutorial</span>
+    <h2>Guía rápida de la interfaz</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Elemento</th><th>Para qué sirve</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Pestañas de arriba</strong></td><td>Cambian de sección: INICIO, CONCEPTOS, PROCEDIMIENTO, PRÁCTICA, ERRORES, RESUMEN, FUENTES y CRÉDITOS.</td></tr>
+          <tr><td><strong>🔍 Buscador</strong></td><td>Escribe una palabra (por ejemplo, «Android») y se resaltarán todas las coincidencias del tutorial.</td></tr>
+          <tr><td><strong>A− / A+</strong></td><td>Reducen o aumentan el tamaño del texto. Se guarda tu preferencia.</td></tr>
+          <tr><td><strong>🌙</strong></td><td>Cambia entre modo oscuro y modo claro.</td></tr>
+          <tr><td><strong>🖨️</strong></td><td>Imprime el tutorial o lo guarda como PDF con todas las secciones.</td></tr>
+          <tr><td><strong>Tarjetas desplegables</strong></td><td>Pulsa el título para abrir o cerrar el contenido.</td></tr>
+          <tr><td><strong>COPIAR</strong></td><td>Copia al portapapeles direcciones y textos útiles.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin-bottom:0">Recorrido recomendado: <strong>CONCEPTOS → PROCEDIMIENTO → PRÁCTICA → ERRORES → RESUMEN</strong>. Si algo falla, ve directo a la pestaña <strong>ERRORES</strong>.</p>
+  </article>
+
+  <div class="callout">
+    <p><strong>Fuente de verdad:</strong> todo el contenido de este tutorial está basado en la documentación oficial de Google. Al final tienes la lista completa de fuentes en la pestaña FUENTES.</p>
+  </div>
+
+</section>
+
+<!-- ============================================================
+     PANEL: CONCEPTOS
+     ============================================================ -->
+<section class="panel" id="p-conceptos" role="tabpanel" aria-label="Conceptos">
+
+  <h2 class="panel-title">Conceptos · Niveles 0 y 1</h2>
+
+  <article class="card">
+    <span class="tag">Nivel 0</span>
+    <h2>¿Qué problema resuelve?</h2>
+    <p>Cada vez que entras en una página web o en una aplicación necesitas un usuario y una contraseña. Aquí empieza el problema:</p>
+    <ul>
+      <li>Si usas <strong>la misma contraseña en todas partes</strong> y una de esas páginas sufre un robo de datos, tu contraseña queda expuesta y alguien puede entrar en todas tus demás cuentas.</li>
+      <li>Si usas <strong>contraseñas distintas para cada sitio</strong>, es imposible recordarlas todas.</li>
+    </ul>
+    <p>El Gestor de contraseñas de Google resuelve justo eso: <strong>crea contraseñas seguras y únicas por ti, las guarda de forma cifrada y las rellena automáticamente cuando las necesitas</strong>.</p>
+    <div class="result"><strong>En una frase:</strong> una caja fuerte digital que recuerda todas tus contraseñas para que tú no tengas que hacerlo.</div>
+  </article>
+
+  <article class="card">
+    <span class="tag">Definición</span>
+    <h2>¿Qué es exactamente?</h2>
+    <p>Es una herramienta <strong>integrada en tu cuenta de Google</strong>. No es una aplicación que haya que instalar aparte. Está disponible en tres sitios:</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Dónde</th><th>Ruta de acceso</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Android</strong></td><td>Ajustes &gt; Google &gt; Gestor de contraseñas</td></tr>
+          <tr><td><strong>Chrome (ordenador)</strong></td><td>Menú de tres puntos (⋮) &gt; Contraseñas y autocompletar &gt; Gestor de contraseñas de Google</td></tr>
+          <tr><td><strong>Web</strong></td><td>
+            <span class="copy-wrap">
+              <code>https://passwords.google.com</code>
+              <button class="copyBtn" type="button" data-copy="https://passwords.google.com">COPIAR</button>
+            </span>
+          </td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p style="margin-bottom:0">Todo lo que guardas se almacena <strong>en tu cuenta de Google</strong> (si has iniciado sesión y activado la sincronización) o <strong>en tu dispositivo</strong> (si no has iniciado sesión).</p>
+  </article>
+
+  <article class="card">
+    <span class="tag">Límites</span>
+    <h2>¿Qué NO hace?</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Creencia</th><th>Realidad</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>«Google puede leer mis contraseñas.»</td>
+            <td><strong>No.</strong> No comparte tus contraseñas con Google ni con terceros. Google no puede leer tus contraseñas guardadas.</td>
+          </tr>
+          <tr>
+            <td>«Me protege de todo.»</td>
+            <td><strong>No.</strong> Protege frente a la pérdida de memoria, la reutilización de contraseñas y las contraseñas débiles. <strong>No</strong> protege frente a un malware que capture lo que escribes en pantalla.</td>
+          </tr>
+          <tr>
+            <td>«Sustituye a la verificación en dos pasos (2FA).»</td>
+            <td><strong>No.</strong> Son herramientas complementarias: el gestor guarda la contraseña, el 2FA añade una segunda prueba de identidad.</td>
+          </tr>
+          <tr>
+            <td>«Funciona sin cuenta de Google.»</td>
+            <td><strong>No</strong>, si quieres sincronizar entre dispositivos. Sin cuenta solo se guarda en el dispositivo local.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </article>
+
+  <article class="card">
+    <span class="tag">Vocabulario</span>
+    <h2>Conceptos básicos que necesitas conocer</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Término</th><th>Qué significa</th><th>Ejemplo</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Cuenta de Google</strong></td>
+            <td>Tu identidad digital de Google. Es el «carné» que te permite usar Gmail, Chrome, Android, etc.</td>
+            <td><code>tunombre@gmail.com</code></td>
+          </tr>
+          <tr>
+            <td><strong>Contraseña guardada</strong></td>
+            <td>Una contraseña que has aceptado almacenar en el gestor.</td>
+            <td>La contraseña de Netflix que guardaste la última vez que entraste.</td>
+          </tr>
+          <tr>
+            <td><strong>Autocompletado</strong></td>
+            <td>Función que rellena usuario y contraseña automáticamente cuando entras a un sitio.</td>
+            <td>Al abrir Instagram, ves que tu usuario y contraseña ya están escritos.</td>
+          </tr>
+          <tr>
+            <td><strong>Sincronización</strong></td>
+            <td>Hacer que tus contraseñas estén disponibles en todos tus dispositivos.</td>
+            <td>Guardas una contraseña en el móvil y aparece también en el ordenador.</td>
+          </tr>
+          <tr>
+            <td><strong>Contraseña comprometida</strong></td>
+            <td>Una contraseña que ha aparecido en una filtración de datos pública.</td>
+            <td>Usabas la misma contraseña en una web que fue hackeada.</td>
+          </tr>
+          <tr>
+            <td><strong>Llave de acceso (passkey)</strong></td>
+            <td>Método de inicio de sesión sin contraseña que usa tu huella o tu cara.</td>
+            <td>Entrar en una web sin escribir nada, solo con tu huella.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </article>
+
+  <article class="card">
+    <span class="tag">Nivel 1</span>
+    <h2>El flujo completo, paso a paso</h2>
+    <p>Todo el sistema se entiende mejor si lo ves como una cadena. Cada eslabón depende del anterior:</p>
+
+    <div class="flow">
+      <div class="flow-node">Cuenta de Google</div>
+      <div class="flow-arrow">↓</div>
+      <div class="flow-node">Gestor de contraseñas</div>
+      <div class="flow-arrow">↓</div>
+      <div class="flow-node">Contraseñas guardadas</div>
+      <div class="flow-arrow">↓</div>
+      <div class="flow-node">Autocompletado</div>
+      <div class="flow-arrow">↓</div>
+      <div class="flow-node">Acceso a sitios y aplicaciones</div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Eslabón</th><th>Qué es</th><th>Ejemplo cotidiano</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Cuenta de Google</strong></td>
+            <td>Tu «llave maestra». Sin ella no hay sincronización ni acceso desde varios dispositivos. Cuando inicias sesión, el gestor sabe quién eres y dónde guardar tus contraseñas.</td>
+            <td>Es como el carné de identidad que te permite abrir la puerta de tu casa. Sin él, no puedes entrar.</td>
+          </tr>
+          <tr>
+            <td><strong>Gestor de contraseñas</strong></td>
+            <td>El «cajón» donde se guardan todas las contraseñas. No es un lugar físico, sino una herramienta dentro de tu cuenta.</td>
+            <td>Es como una caja fuerte que solo se abre con tu cuenta de Google.</td>
+          </tr>
+          <tr>
+            <td><strong>Contraseñas guardadas</strong></td>
+            <td>Las contraseñas que has aceptado guardar. Cada vez que aceptas guardar una, se añade al cajón.</td>
+            <td>Es como apuntar la contraseña del wifi en un papel, pero ese papel está cifrado y solo lo puedes leer tú.</td>
+          </tr>
+          <tr>
+            <td><strong>Autocompletado</strong></td>
+            <td>Rellena el usuario y la contraseña por ti. No tienes que escribir nada.</td>
+            <td>Es como tener un asistente que, cada vez que llegas a una puerta, ya ha sacado la llave correcta.</td>
+          </tr>
+          <tr>
+            <td><strong>Acceso a sitios y apps</strong></td>
+            <td>El resultado final: entras en Gmail, Netflix, tu banco… sin recordar contraseñas.</td>
+            <td>Es como llegar a casa y que la puerta se abra sola porque ya tienes la llave en la mano.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </article>
+
+  <article class="card">
+    <span class="tag">Comparativa</span>
+    <h2>Con gestor y sin gestor</h2>
+    <div class="compare">
+      <div class="bad">
+        <h4>Sin gestor de contraseñas</h4>
+        <ul>
+          <li>Usas la misma contraseña en todos los sitios.</li>
+          <li>Si una web se filtra, todas tus cuentas quedan expuestas.</li>
+          <li>Apuntas contraseñas en papeles o en notas sin cifrar.</li>
+          <li>Olvidas contraseñas constantemente.</li>
+          <li>Pierdes tiempo escribiendo usuario y contraseña cada vez.</li>
+        </ul>
+      </div>
+      <div class="good">
+        <h4>Con Gestor de contraseñas de Google</h4>
+        <ul>
+          <li>Cada sitio tiene su propia contraseña, larga y aleatoria.</li>
+          <li>Si una web se filtra, las demás siguen a salvo.</li>
+          <li>Todo se guarda cifrado en tu cuenta de Google.</li>
+          <li>Puedes consultar cualquier contraseña cuando quieras.</li>
+          <li>El autocompletado rellena los formularios por ti.</li>
+        </ul>
+      </div>
+    </div>
+  </article>
+
+  <article class="card">
+    <span class="tag">Resumen</span>
+    <h2>Lo que has aprendido en CONCEPTOS</h2>
+    <ul>
+      <li>El gestor resuelve el problema de tener que recordar decenas de contraseñas distintas.</li>
+      <li>Vive dentro de tu cuenta de Google y se abre desde Android, Chrome o la web.</li>
+      <li>Guarda contraseñas cifradas y las rellena automáticamente.</li>
+      <li>No comparte tus contraseñas con Google ni con terceros.</li>
+      <li>No sustituye al 2FA ni protege frente a malware que capture tu pantalla.</li>
+      <li>Todo el sistema depende de tu cuenta de Google: es la «llave maestra».</li>
+    </ul>
+  </article>
+
+</section>
+
+<!-- ============================================================
+     PANEL: PROCEDIMIENTO
+     ============================================================ -->
+<section class="panel" id="p-procedimiento" role="tabpanel" aria-label="Procedimiento">
+
+  <h2 class="panel-title">Procedimiento · Niveles 2, 3, 4 y 5</h2>
+
+  <div class="callout">
+    <p><strong>Cómo leer esta sección:</strong> cada procedimiento tiene un objetivo, los pasos numerados (una sola acción por paso), el resultado esperado y qué hacer si algo sale mal.</p>
+  </div>
+
+  <h3 style="margin-top:1.4rem">Nivel 2 — Puedo acceder al gestor</h3>
+
+  <details open>
+    <summary>Procedimiento 2.1 — Abrir el gestor desde Android</summary>
+    <div class="details-body">
+      <p><strong>Objetivo:</strong> abrir el Gestor de contraseñas de Google desde los Ajustes de tu teléfono Android.</p>
+      <p><strong>Para qué sirve:</strong> para ver, añadir, editar o eliminar las contraseñas guardadas en tu cuenta de Google.</p>
+
+      <ol class="steps">
+        <li>Abre la aplicación <strong>«Ajustes»</strong> de tu teléfono Android. <em>Motivo:</em> es el punto de entrada del gestor en Android.</li>
+        <li>Desplázate hacia abajo y busca la sección <strong>«Google»</strong>. <em>Motivo:</em> el gestor vive dentro de las opciones de tu cuenta de Google.</li>
+        <li>Toca en <strong>«Google»</strong>. <em>Motivo:</em> se abren las opciones relacionadas con tu cuenta.</li>
+        <li>Toca en <strong>«Gestor de contraseñas»</strong>. <em>Motivo:</em> es la herramienta que quieres usar.</li>
+      </ol>
+
+      <div class="result">
+        <strong>Resultado esperado:</strong> una pantalla con la lista de contraseñas guardadas, o un mensaje que dice que no hay contraseñas guardadas todavía.
+      </div>
+
+      <p style="margin-top:.9rem"><strong>Si algo sale mal:</strong></p>
+      <ul>
+        <li><strong>No encuentras «Ajustes»:</strong> desliza hacia abajo desde la parte superior de la pantalla para abrir el panel de notificaciones y busca el icono de engranaje.</li>
+        <li><strong>No ves «Google»:</strong> escribe «Google» en la barra de búsqueda de los ajustes.</li>
+        <li><strong>No ves «Gestor de contraseñas»:</strong> escribe «Gestor de contraseñas» o «contraseñas» en la barra de búsqueda.</li>
+        <li><strong>Ves «Autocompletar» en lugar de «Gestor de contraseñas»:</strong> toca en «Autocompletar» → «Autocompletar con Google» → «Gestor de contraseñas».</li>
+        <li><strong>La ruta es distinta:</strong> puede ser por la versión de Android. Usa siempre la barra de búsqueda de Ajustes.</li>
+      </ul>
+
+      <div class="callout ok">
+        <p><strong>Qué acabas de aprender:</strong> en Android, el Gestor de contraseñas vive dentro de la aplicación Ajustes, en la sección de Google.</p>
+      </div>
+    </div>
+  </details>
+
+  <details>
+    <summary>Procedimiento 2.2 — Abrir el gestor desde Chrome en el ordenador</summary>
+    <div class="details-body">
+      <p><strong>Objetivo:</strong> abrir el Gestor de contraseñas de Google desde el navegador Chrome en un ordenador.</p>
+
+      <ol class="steps">
+        <li>Abre <strong>Chrome</strong> en tu ordenador.</li>
+        <li>Haz clic en el <strong>icono de tres puntos (⋮)</strong> de la esquina superior derecha.</li>
+        <li>Pasa el ratón por encima de <strong>«Contraseñas y autocompletar»</strong>. Se abrirá un submenú.</li>
+        <li>Haz clic en <strong>«Gestor de contraseñas de Google»</strong>.</li>
+      </ol>
+
+      <div class="result">
+        <strong>Resultado esperado:</strong> se abre una pestaña nueva con la lista de contraseñas guardadas.
+      </div>
+
+      <p style="margin-top:.9rem"><strong>Atajo:</strong> también puedes escribir directamente en la barra de direcciones:</p>
+      <div class="copy-wrap">
+        <code>chrome://password-manager/passwords</code>
+        <button class="copyBtn" type="button" data-copy="chrome://password-manager/passwords">COPIAR</button>
+      </div>
+
+      <p style="margin-top:.9rem"><strong>Si algo sale mal:</strong></p>
+      <ul>
+        <li><strong>No ves «Contraseñas y autocompletar»:</strong> busca directamente «Contraseñas» en el menú de tres puntos.</li>
+        <li><strong>No ocurre nada:</strong> asegúrate de que estás usando Chrome y no otro navegador. Si es otro, ábrelo en Chrome y repite los pasos.</li>
+      </ul>
+
+      <div class="callout ok">
+        <p><strong>Qué acabas de aprender:</strong> en el ordenador, el gestor está dentro de Chrome, en el menú de tres puntos.</p>
+      </div>
+    </div>
+  </details>
+
+  <details>
+    <summary>Procedimiento 2.3 — Abrir el gestor desde la web</summary>
+    <div class="details-body">
+      <p><strong>Objetivo:</strong> acceder al Gestor de contraseñas desde cualquier navegador usando la dirección web.</p>
+
+      <ol class="steps">
+        <li>Abre cualquier navegador (Chrome, Edge, Firefox, etc.).</li>
+        <li>En la barra de direcciones, escribe <code>passwords.google.com</code>.</li>
+        <li>Pulsa <strong>Intro</strong>.</li>
+      </ol>
+
+      <div class="result">
+        <strong>Resultado esperado:</strong> la página del Gestor de contraseñas de Google con la lista de contraseñas guardadas.
+      </div>
+
+      <p style="margin-top:.9rem"><strong>Si algo sale mal:</strong></p>
+      <ul>
+        <li><strong>Te pide iniciar sesión:</strong> introduce tu cuenta de Google y su contraseña. Es lo normal.</li>
+        <li><strong>No ves tus contraseñas:</strong> puede que hayas iniciado sesión con otra cuenta. Cierra sesión y vuelve a entrar con la cuenta correcta.</li>
+      </ul>
+
+      <div class="callout ok">
+        <p><strong>Qué acabas de aprender:</strong> existe una dirección web universal para acceder al gestor desde cualquier navegador.</p>
+      </div>
+    </div>
+  </details>
+
+  <h3 style="margin-top:1.6rem">Nivel 3 — Puedo guardar y utilizar contraseñas</h3>
+
+  <details>
+    <summary>Procedimiento 3.1 — Guardar una contraseña nueva mientras te registras</summary>
+    <div class="details-body">
+      <p><strong>Situación real:</strong> «Estoy entrando por primera vez en una página web».</p>
+      <p><strong>Objetivo:</strong> registrarte en una página nueva y dejar que Chrome guarde la contraseña automáticamente.</p>
+      <p><strong>Para qué sirve:</strong> para no tener que recordar la contraseña y poder entrar la próxima vez sin escribirla.</p>
+
+      <ol class="steps">
+        <li>Abre <strong>Chrome</strong> en tu ordenador o en tu móvil.</li>
+        <li>Ve a una página donde puedas crear una cuenta nueva (un sitio de compras, un foro…).</li>
+        <li>Rellena el formulario de registro con tu correo electrónico.</li>
+        <li>Cuando llegues al campo <strong>«Contraseña»</strong>, haz clic o toca en él.</li>
+        <li>Si Chrome te sugiere una contraseña segura (por ejemplo <code>X7#kL9$mP2!q</code>), acéptala pulsando «Usar contraseña sugerida».</li>
+        <li>Completa el registro.</li>
+        <li>Cuando Chrome pregunte <strong>«¿Guardar contraseña?»</strong>, haz clic en <strong>«Guardar»</strong>.</li>
+      </ol>
+
+      <div class="result">
+        <strong>Resultado esperado:</strong> un mensaje de confirmación que dice que la contraseña se ha guardado.
+      </div>
+
+      <p style="margin-top:.9rem"><strong>Comprobación real:</strong> cierra Chrome y vuelve a abrirlo. Ve al sitio donde te registraste y haz clic en el campo de usuario. Chrome debería rellenar automáticamente tu usuario y tu contraseña.</p>
+
+      <p><strong>Si algo sale mal:</strong></p>
+      <ul>
+        <li><strong>No ves el mensaje de guardado:</strong> abre el Gestor de contraseñas y comprueba si aparece el sitio en la lista.</li>
+        <li><strong>El autocompletado no funciona:</strong> puede que no hayas iniciado sesión en Chrome, que la sincronización esté desactivada o que hayas rechazado guardar la contraseña sin querer. Vuelve a iniciar sesión y activa la opción «Preguntar si quiero guardar contraseñas».</li>
+      </ul>
+
+      <div class="callout ok">
+        <p><strong>Qué acabas de aprender:</strong> Chrome guarda las contraseñas cuando se lo pides y las rellena automáticamente después.</p>
+      </div>
+    </div>
+  </details>
+
+  <details>
+    <summary>Procedimiento 3.2 — Guardar una contraseña manualmente</summary>
+    <div class="details-body">
+      <p><strong>Objetivo:</strong> añadir al gestor una contraseña que ya tienes (por ejemplo, de una web antigua).</p>
+
+      <ol class="steps">
+        <li>Abre el Gestor de contraseñas (Ajustes &gt; Google &gt; Gestor de contraseñas en Android, o Chrome &gt; ⋮ &gt; Contraseñas y autocompletar &gt; Gestor de contraseñas de Google).</li>
+        <li>Busca el botón <strong>«Añadir»</strong> o <strong>«Agregar contraseña»</strong>. En Chrome de ordenador está en la parte superior de la lista; en Android puede estar en el menú de tres puntos o en un botón flotante.</li>
+        <li>Rellena los campos: <strong>sitio web</strong>, <strong>nombre de usuario</strong> y <strong>contraseña</strong>.</li>
+        <li>Pulsa <strong>«Guardar»</strong>.</li>
+      </ol>
+
+      <div class="result">
+        <strong>Resultado esperado:</strong> la contraseña aparece en la lista del gestor.
+      </div>
+
+      <p style="margin-top:.9rem"><strong>Comprobación real:</strong> ve a la web correspondiente e intenta iniciar sesión. Chrome debería ofrecerte autocompletar el usuario y la contraseña.</p>
+
+      <div class="callout ok">
+        <p><strong>Qué acabas de aprender:</strong> también puedes añadir contraseñas manualmente si no las guardaste en su momento.</p>
+      </div>
+    </div>
+  </details>
+
+  <h3 style="margin-top:1.6rem">Nivel 4 — Sé gestionar mis contraseñas</h3>
+
+  <details>
+    <summary>Procedimiento 4.1 — Consultar una contraseña guardada</summary>
+    <div class="details-body">
+      <p><strong>Objetivo:</strong> ver la contraseña que tienes guardada para un sitio concreto.</p>
+      <p><strong>Para qué sirve:</strong> para recuperar una contraseña que has olvidado o comprobar cuál es.</p>
+
+      <ol class="steps">
+        <li>Abre el Gestor de contraseñas.</li>
+        <li>Busca el sitio web en la lista (usa la barra de búsqueda si tienes muchas contraseñas).</li>
+        <li>Toca o haz clic en el sitio.</li>
+        <li>Pulsa el <strong>icono del ojo (👁)</strong> para mostrar la contraseña.</li>
+      </ol>
+
+      <div class="result">
+        <strong>Resultado esperado:</strong> verás la contraseña en texto claro.
+      </div>
+
+      <div class="callout warn">
+        <p>Es posible que el sistema te pida tu <strong>huella, tu cara o tu PIN</strong> antes de mostrarla. Es una protección normal, no un error.</p>
+      </div>
+
+      <div class="callout ok">
+        <p><strong>Qué acabas de aprender:</strong> puedes ver cualquier contraseña guardada, pero el sistema te pide autenticación para protegerla.</p>
+      </div>
+    </div>
+  </details>
+
+  <details>
+    <summary>Procedimiento 4.2 — Buscar una contraseña</summary>
+    <div class="details-body">
+      <p><strong>Objetivo:</strong> encontrar rápidamente una contraseña específica en la lista.</p>
+
+      <ol class="steps">
+        <li>Abre el Gestor de contraseñas.</li>
+        <li>Usa la barra de búsqueda (<strong>icono de lupa 🔍</strong>).</li>
+        <li>Escribe el nombre del sitio o el usuario.</li>
+      </ol>
+
+      <div class="result">
+        <strong>Resultado esperado:</strong> la lista se filtra y muestra solo los resultados coincidentes.
+      </div>
+
+      <p style="margin-top:.9rem"><strong>Prueba sugerida:</strong> busca «gmail» en el gestor. Debería aparecer tu cuenta de Gmail con la contraseña guardada.</p>
+
+      <div class="callout ok">
+        <p><strong>Qué acabas de aprender:</strong> el gestor tiene buscador para encontrar contraseñas rápidamente.</p>
+      </div>
+    </div>
+  </details>
+
+  <details>
+    <summary>Procedimiento 4.3 — Modificar una contraseña guardada</summary>
+    <div class="details-body">
+      <p><strong>Objetivo:</strong> cambiar la contraseña que tienes guardada para un sitio.</p>
+      <p><strong>Para qué sirve:</strong> cuando cambias la contraseña en una web, el gestor puede seguir teniendo la antigua. Hay que actualizarla.</p>
+
+      <ol class="steps">
+        <li>Abre el Gestor de contraseñas.</li>
+        <li>Busca el sitio y toca en él.</li>
+        <li>Pulsa el botón <strong>«Editar»</strong> (icono de lápiz ✏️).</li>
+        <li>Cambia la contraseña por la nueva.</li>
+        <li>Pulsa <strong>«Guardar»</strong>.</li>
+      </ol>
+
+      <div class="result">
+        <strong>Resultado esperado:</strong> la contraseña actualizada aparece en la lista.
+      </div>
+
+      <p style="margin-top:.9rem"><strong>Comprobación real:</strong> cambia la contraseña de un sitio y luego intenta iniciar sesión. El autocompletado debe usar la contraseña nueva.</p>
+
+      <div class="callout ok">
+        <p><strong>Qué acabas de aprender:</strong> podemos mantener las contraseñas actualizadas manualmente.</p>
+      </div>
+    </div>
+  </details>
+
+  <details>
+    <summary>Procedimiento 4.4 — Eliminar una contraseña guardada</summary>
+    <div class="details-body">
+      <p><strong>Objetivo:</strong> borrar una contraseña que ya no necesitas o que guardaste por error.</p>
+
+      <ol class="steps">
+        <li>Abre el Gestor de contraseñas.</li>
+        <li>Busca el sitio y toca en él.</li>
+        <li>Pulsa el botón <strong>«Eliminar»</strong> (icono de papelera 🗑️).</li>
+        <li>Confirma la eliminación.</li>
+      </ol>
+
+      <div class="result">
+        <strong>Resultado esperado:</strong> la contraseña desaparece de la lista.
+      </div>
+
+      <p style="margin-top:.9rem"><strong>Prueba sugerida:</strong> elimina una contraseña de prueba y comprueba que ya no aparece en la lista.</p>
+
+      <div class="callout ok">
+        <p><strong>Qué acabas de aprender:</strong> podemos eliminar contraseñas que ya no queremos tener guardadas.</p>
+      </div>
+    </div>
+  </details>
+
+  <h3 style="margin-top:1.6rem">Nivel 5 — Seguridad</h3>
+
+  <article class="card">
+    <h3>¿Qué es la comprobación de contraseñas?</h3>
+    <p>Es una función que revisa todas tus contraseñas guardadas y te dice si alguna:</p>
+    <ul>
+      <li><span class="badge bad">Comprometida</span> ha aparecido en una filtración de datos.</li>
+      <li><span class="badge warn">Débil</span> es fácil de adivinar (por ejemplo «123456» o «contraseña»).</li>
+      <li><span class="badge">Reutilizada</span> la usas en más de un sitio.</li>
+    </ul>
+    <p><strong>¿Por qué importa?</strong> Porque una contraseña comprometida o débil es una puerta abierta para que alguien entre en tus cuentas.</p>
+  </article>
+
+  <details>
+    <summary>Procedimiento 5.1 — Ejecutar la comprobación de contraseñas</summary>
+    <div class="details-body">
+      <p><strong>Objetivo:</strong> auditar tus contraseñas y detectar las que tienen problemas.</p>
+
+      <h4>Desde Chrome (ordenador)</h4>
+      <ol class="steps">
+        <li>Abre Chrome.</li>
+        <li>Haz clic en el menú de tres puntos (⋮).</li>
+        <li>Ve a «Contraseñas y autocompletar» &gt; «Gestor de contraseñas de Google».</li>
+        <li>En el menú lateral izquierdo, haz clic en <strong>«Comprobación de contraseñas»</strong>.</li>
+      </ol>
+
+      <h4>Desde Android</h4>
+      <ol class="steps">
+        <li>Abre Ajustes &gt; Google &gt; Gestor de contraseñas.</li>
+        <li>Busca <strong>«Comprobación de contraseñas»</strong> o «Checkup».</li>
+        <li>Toca en <strong>«Comprobar contraseñas»</strong>.</li>
+      </ol>
+
+      <h4>Desde la web</h4>
+      <ol class="steps">
+        <li>Ve a <code>passwords.google.com</code>.</li>
+        <li>Haz clic en <strong>«Ir a la comprobación de contraseñas»</strong>.</li>
+        <li>Pulsa <strong>«Comprobar contraseñas»</strong>.</li>
+      </ol>
+
+      <div class="result">
+        <strong>Resultado esperado:</strong> una lista de contraseñas con etiquetas como «Comprometida», «Débil» o «Reutilizada».
+      </div>
+
+      <h4>Qué hacer con los resultados</h4>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Aviso</th><th>Acción</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><span class="badge bad">Comprometida</span></td><td>Cámbiala <strong>inmediatamente</strong> en el sitio correspondiente.</td></tr>
+            <tr><td><span class="badge warn">Débil</span></td><td>Cámbiala por una más larga y compleja.</td></tr>
+            <tr><td><span class="badge">Reutilizada</span></td><td>Cámbiala en <strong>todos</strong> los sitios donde la uses, para que cada uno tenga una única.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p><strong>¿Cómo sé que lo he solucionado?</strong> Después de cambiar las contraseñas, vuelve a ejecutar la comprobación. Los avisos desaparecerán.</p>
+
+      <p><strong>Si algo sale mal:</strong></p>
+      <ul>
+        <li><strong>No aparece la comprobación:</strong> puede que no tengas contraseñas guardadas o que la función no esté disponible en tu dispositivo. Asegúrate de haber iniciado sesión en Chrome.</li>
+        <li><strong>La lista está vacía:</strong> guarda al menos una contraseña y vuelve a intentarlo.</li>
+      </ul>
+
+      <div class="callout ok">
+        <p><strong>Qué acabas de aprender:</strong> Google puede auditar tus contraseñas y avisarte de problemas de seguridad.</p>
+      </div>
+    </div>
+  </details>
+
+</section>
+
+<!-- ============================================================
+     PANEL: PRÁCTICA
+     ============================================================ -->
+<section class="panel" id="p-practica" role="tabpanel" aria-label="Práctica">
+
+  <h2 class="panel-title">Práctica · Nivel 6, proyecto final y checklist</h2>
+
+  <article class="card">
+    <span class="tag">Nivel 6</span>
+    <h2>Situaciones reales del día a día</h2>
+    <p>Estas son las siete situaciones que te vas a encontrar de verdad. Todas están documentadas en la fuente oficial.</p>
+  </article>
+
+  <details>
+    <summary>Caso 1 — «Me he registrado en una página nueva»</summary>
+    <div class="details-body">
+      <p><strong>Qué hacer:</strong> cuando Chrome te ofrezca guardar la contraseña, pulsa <strong>«Guardar»</strong>. Si no lo hace, abre el gestor y añádela manualmente.</p>
+      <p><strong>¿Está documentado?</strong> Sí. Chrome pregunta si quieres guardar la contraseña después de registrarte.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>Caso 2 — «No recuerdo mi contraseña»</summary>
+    <div class="details-body">
+      <p><strong>Qué hacer:</strong> abre el gestor, busca el sitio y pulsa el icono del ojo para ver la contraseña. Si no la tienes guardada, tendrás que usar el proceso de recuperación del sitio web.</p>
+      <p><strong>¿Está documentado?</strong> Sí. Puedes ver las contraseñas guardadas en el gestor.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>Caso 3 — «Quiero comprobar qué contraseñas tengo guardadas»</summary>
+    <div class="details-body">
+      <p><strong>Qué hacer:</strong> abre el gestor y revisa la lista. Usa la búsqueda si hay muchas.</p>
+      <p><strong>¿Está documentado?</strong> Sí. La lista de contraseñas está disponible en el gestor, en Chrome y en <code>passwords.google.com</code>.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>Caso 4 — «Google me avisa de un problema de seguridad»</summary>
+    <div class="details-body">
+      <p><strong>Qué hacer:</strong> ve a la comprobación de contraseñas, identifica las marcadas como comprometidas, débiles o reutilizadas y cámbialas.</p>
+      <p><strong>¿Está documentado?</strong> Sí. Google notifica cuando encuentra contraseñas comprometidas.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>Caso 5 — «Quiero cambiar una contraseña»</summary>
+    <div class="details-body">
+      <p><strong>Qué hacer:</strong> ve al sitio web, cambia la contraseña allí y luego actualiza la contraseña guardada en el gestor.</p>
+      <p><strong>¿Está documentado?</strong> Sí. Puedes editar la contraseña en el gestor.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>Caso 6 — «He cambiado de dispositivo»</summary>
+    <div class="details-body">
+      <p><strong>Qué hacer:</strong> inicia sesión con tu cuenta de Google en el nuevo dispositivo. Si has activado la sincronización, tus contraseñas aparecerán automáticamente.</p>
+      <p><strong>¿Está documentado?</strong> Sí. Al iniciar sesión en Chrome y permitir que use tus contraseñas, estas están disponibles en todos los dispositivos.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>Caso 7 — «No aparece la contraseña que esperaba»</summary>
+    <div class="details-body">
+      <p><strong>Qué hacer:</strong> comprueba que estás usando la cuenta de Google correcta. Es posible que la contraseña se guardara en otra cuenta o en el dispositivo local en lugar de en la cuenta.</p>
+      <p><strong>¿Está documentado?</strong> Sí. Si no has iniciado sesión en Chrome, las contraseñas se guardan solo en el dispositivo.</p>
+    </div>
+  </details>
+
+  <article class="card" style="margin-top:1.3rem">
+    <span class="tag">Proyecto final</span>
+    <h2>Mi primera sesión completa con Google Password Manager</h2>
+    <p><strong>Objetivo:</strong> «Ahora sé utilizar el Gestor de contraseñas de Google por mí mismo».</p>
+    <p>Realiza estas acciones <strong>en orden</strong>. Al terminar, habrás usado todas las funciones principales.</p>
+
+    <ol class="steps">
+      <li>
+        <strong>Acceder al gestor.</strong> Ábrelo desde Android (Ajustes &gt; Google &gt; Gestor de contraseñas) o desde Chrome (⋮ &gt; Contraseñas y autocompletar &gt; Gestor de contraseñas de Google).<br>
+        <em>Comprueba:</em> ves la lista de contraseñas guardadas (o un mensaje vacío).
+      </li>
+      <li>
+        <strong>Localizar una contraseña.</strong> Busca una contraseña existente en la lista. Si no tienes ninguna, salta al paso 3.<br>
+        <em>Comprueba:</em> encuentras el sitio en la lista y puedes ver la contraseña con el icono del ojo.
+      </li>
+      <li>
+        <strong>Guardar una contraseña nueva.</strong> Ve a una página web donde puedas crear una cuenta (por ejemplo, un foro). Regístrate y acepta guardar la contraseña cuando Chrome te lo pregunte.<br>
+        <em>Comprueba:</em> la contraseña aparece en el gestor.
+      </li>
+      <li>
+        <strong>Utilizar una contraseña guardada.</strong> Cierra sesión en esa web y vuelve a la página de inicio de sesión.<br>
+        <em>Comprueba:</em> Chrome rellena automáticamente el usuario y la contraseña.
+      </li>
+      <li>
+        <strong>Revisar las opciones de seguridad.</strong> Ejecuta la comprobación de contraseñas.<br>
+        <em>Comprueba:</em> ves los resultados (comprometidas, débiles, reutilizadas).
+      </li>
+      <li>
+        <strong>Resolver un problema simulado.</strong> Elimina una contraseña de prueba y luego vuelve a añadirla manualmente.<br>
+        <em>Comprueba:</em> la contraseña desaparece y luego reaparece en la lista.
+      </li>
+      <li>
+        <strong>Comprobar que todo funciona.</strong> Cierra Chrome, vuelve a abrirlo y accede a la web del paso 3.<br>
+        <em>Comprueba:</em> el autocompletado funciona correctamente.
+      </li>
+    </ol>
+  </article>
+
+  <article class="card">
+    <span class="tag">Ejercicios</span>
+    <h2>Ejercicios prácticos con solución explicada</h2>
+
+    <h3>Ejercicio 1 — Encuentra la ruta</h3>
+    <p><strong>Enunciado:</strong> abre el Gestor de contraseñas en tu ordenador sin usar el menú de tres puntos.</p>
+    <p><strong>Solución:</strong> escribe en la barra de direcciones <code>chrome://password-manager/passwords</code> y pulsa Intro.</p>
+    <p><strong>Por qué funciona:</strong> es la dirección interna de Chrome que abre directamente el gestor, equivalente a la ruta del menú.</p>
+
+    <h3>Ejercicio 2 — Detecta el error</h3>
+    <p><strong>Enunciado:</strong> un compañero dice: «He guardado mi contraseña en el móvil, pero en el ordenador no aparece». ¿Qué dos causas probables hay?</p>
+    <p><strong>Solución:</strong> (1) no ha iniciado sesión con la <strong>misma cuenta de Google</strong> en el ordenador; (2) la <strong>sincronización está desactivada</strong>, así que la contraseña se guardó solo en el dispositivo local.</p>
+    <p><strong>Por qué:</strong> sin cuenta de Google o sin sincronización, las contraseñas no viajan entre dispositivos.</p>
+
+    <h3>Ejercicio 3 — Interpreta el aviso</h3>
+    <p><strong>Enunciado:</strong> la comprobación marca tu contraseña de una tienda online como «Reutilizada». ¿Basta con cambiarla solo en esa tienda?</p>
+    <p><strong>Solución:</strong> No. Hay que cambiarla en <strong>todos</strong> los sitios donde la estés usando, de forma que cada sitio tenga una contraseña única.</p>
+    <p><strong>Por qué:</strong> mientras siga existiendo en otro sitio, sigue siendo una puerta abierta si ese otro sitio se filtra.</p>
+
+    <h3>Ejercicio 4 — Decide el orden</h3>
+    <p><strong>Enunciado:</strong> quieres cambiar la contraseña de tu banco. ¿Qué haces primero: cambiarla en el banco o en el gestor?</p>
+    <p><strong>Solución:</strong> primero en el <strong>banco</strong> (la web), después en el <strong>gestor</strong> para actualizar la copia guardada.</p>
+    <p><strong>Por qué:</strong> si actualizas el gestor primero, el autocompletado intentará entrar con una contraseña que el banco todavía no reconoce.</p>
+  </article>
+
+  <article class="card">
+    <span class="tag">Checklist</span>
+    <h2>Checklist final de aprendizaje</h2>
+    <p class="check-progress" id="checkProgress">0 de 14 completados</p>
+
+    <ul class="check-list" id="checkList">
+      <li><label class="check"><input type="checkbox" data-check="c1"><span>Entiendo qué es el Gestor de contraseñas de Google.</span></label></li>
+      <li><label class="check"><input type="checkbox" data-check="c2"><span>Sé cómo acceder a él desde Android, Chrome y la web.</span></label></li>
+      <li><label class="check"><input type="checkbox" data-check="c3"><span>Sé localizar mis contraseñas.</span></label></li>
+      <li><label class="check"><input type="checkbox" data-check="c4"><span>Sé guardar una contraseña nueva.</span></label></li>
+      <li><label class="check"><input type="checkbox" data-check="c5"><span>Sé utilizar una contraseña guardada.</span></label></li>
+      <li><label class="check"><input type="checkbox" data-check="c6"><span>Sé consultar una contraseña.</span></label></li>
+      <li><label class="check"><input type="checkbox" data-check="c7"><span>Sé buscar una contraseña.</span></label></li>
+      <li><label class="check"><input type="checkbox" data-check="c8"><span>Sé modificar una contraseña guardada.</span></label></li>
+      <li><label class="check"><input type="checkbox" data-check="c9"><span>Sé eliminar una contraseña guardada.</span></label></li>
+      <li><label class="check"><input type="checkbox" data-check="c10"><span>Sé ejecutar la comprobación de contraseñas.</span></label></li>
+      <li><label class="check"><input type="checkbox" data-check="c11"><span>Sé interpretar una alerta de seguridad.</span></label></li>
+      <li><label class="check"><input type="checkbox" data-check="c12"><span>Sé resolver los problemas básicos explicados.</span></label></li>
+      <li><label class="check"><input type="checkbox" data-check="c13"><span>He realizado el proyecto final.</span></label></li>
+      <li><label class="check"><input type="checkbox" data-check="c14"><span>Puedo repetir el proceso sin ayuda.</span></label></li>
+    </ul>
+
+    <button class="btn" id="resetChecks" type="button">Reiniciar checklist</button>
+  </article>
+
+</section>
+
+<!-- ============================================================
+     PANEL: ERRORES
+     ============================================================ -->
+<section class="panel" id="p-errores" role="tabpanel" aria-label="Errores">
+
+  <h2 class="panel-title">Errores y soluciones</h2>
+
+  <article class="card">
+    <h2>Errores frecuentes de un vistazo</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Error</th><th>Causa probable</th><th>Solución rápida</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Chrome no me pregunta si quiero guardar la contraseña</td>
+            <td>La opción «Preguntar si quiero guardar contraseñas» está desactivada.</td>
+            <td>Actívala en Configuración del gestor.</td>
+          </tr>
+          <tr>
+            <td>No veo la contraseña guardada en el nuevo dispositivo</td>
+            <td>No has iniciado sesión con la misma cuenta o la sincronización está desactivada.</td>
+            <td>Inicia sesión y acepta usar las contraseñas de tu cuenta.</td>
+          </tr>
+          <tr>
+            <td>La comprobación de contraseñas no funciona</td>
+            <td>No tienes contraseñas guardadas o no has iniciado sesión.</td>
+            <td>Inicia sesión y guarda al menos una contraseña.</td>
+          </tr>
+          <tr>
+            <td>El autocompletado no rellena nada</td>
+            <td>No has iniciado sesión en Chrome o la sincronización está apagada.</td>
+            <td>Inicia sesión en Chrome con tu cuenta de Google.</td>
+          </tr>
+          <tr>
+            <td>La ruta de Android no coincide</td>
+            <td>Tu versión de Android es distinta.</td>
+            <td>Usa la barra de búsqueda de Ajustes y escribe «gestor de contraseñas».</td>
+          </tr>
+          <tr>
+            <td>La contraseña guardada es antigua</td>
+            <td>Cambiaste la contraseña en la web pero no en el gestor.</td>
+            <td>Edita la contraseña en el gestor.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </article>
+
+  <h3>Correcto frente a incorrecto</h3>
+  <div class="compare">
+    <div class="good">
+      <h4>✔ Forma correcta</h4>
+      <ul>
+        <li>Aceptar la contraseña sugerida por Chrome al registrarte.</li>
+        <li>Usar una contraseña distinta en cada sitio.</li>
+        <li>Cambiar en el sitio web y luego actualizar el gestor.</li>
+        <li>Ejecutar la comprobación de contraseñas de vez en cuando.</li>
+        <li>Activar la verificación en dos pasos en tu cuenta de Google.</li>
+      </ul>
+    </div>
+    <div class="bad">
+      <h4>✘ Forma incorrecta</h4>
+      <ul>
+        <li>Rechazar el guardado una y otra vez y seguir usando la misma contraseña.</li>
+        <li>Reutilizar «123456» o «contraseña» en varios sitios.</li>
+        <li>Cambiar solo la contraseña del gestor y no la del sitio web.</li>
+        <li>Ignorar los avisos de contraseñas comprometidas.</li>
+        <li>Guardar contraseñas sin tener ninguna recuperación configurada en la cuenta de Google.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2 style="margin-top:1.6rem">Problemas y soluciones detallados</h2>
+
+  <details>
+    <summary>PROBLEMA: Chrome no me pregunta si quiero guardar la contraseña</summary>
+    <div class="details-body">
+      <p><strong>Causa probable:</strong> la opción «Preguntar si quiero guardar contraseñas» está desactivada.</p>
+      <p><strong>Solución:</strong></p>
+      <ol class="steps">
+        <li>Abre Chrome.</li>
+        <li>Ve a «Contraseñas y autocompletar» &gt; «Gestor de contraseñas de Google».</li>
+        <li>Haz clic en «Configuración».</li>
+        <li>Activa «Preguntar si quiero guardar contraseñas».</li>
+      </ol>
+      <p><strong>Comprobación:</strong> vuelve a registrarte en un sitio y comprueba que Chrome te pregunta.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>PROBLEMA: No veo la contraseña guardada en el nuevo dispositivo</summary>
+    <div class="details-body">
+      <p><strong>Causa probable:</strong> no has iniciado sesión con la misma cuenta de Google o la sincronización está desactivada.</p>
+      <p><strong>Solución:</strong></p>
+      <ol class="steps">
+        <li>Abre Chrome en el nuevo dispositivo.</li>
+        <li>Inicia sesión con tu cuenta de Google.</li>
+        <li>Cuando Chrome pregunte si quieres usar las contraseñas de tu cuenta, acepta.</li>
+      </ol>
+      <p><strong>Comprobación:</strong> abre el Gestor de contraseñas y comprueba que aparecen las contraseñas.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>PROBLEMA: La comprobación de contraseñas no funciona</summary>
+    <div class="details-body">
+      <p><strong>Causa probable:</strong> no tienes contraseñas guardadas o no has iniciado sesión.</p>
+      <p><strong>Solución:</strong></p>
+      <ol class="steps">
+        <li>Asegúrate de haber iniciado sesión en Chrome.</li>
+        <li>Guarda al menos una contraseña.</li>
+        <li>Vuelve a ejecutar la comprobación.</li>
+      </ol>
+      <p><strong>Comprobación:</strong> deberías ver los resultados de la comprobación.</p>
+    </div>
+  </details>
+
+  <div class="callout warn">
+    <p><strong>Recuerda:</strong> si el problema no está en esta lista, revisa primero que estés usando la <strong>cuenta de Google correcta</strong> y que hayas <strong>iniciado sesión</strong>. Son las dos causas más habituales de casi todo.</p>
+  </div>
+
+</section>
+
+<!-- ============================================================
+     PANEL: RESUMEN
+     ============================================================ -->
+<section class="panel" id="p-resumen" role="tabpanel" aria-label="Resumen">
+
+  <h2 class="panel-title">Resumen · Nivel 7, glosario y preguntas frecuentes</h2>
+
+  <article class="card">
+    <span class="tag">Nivel 7</span>
+    <h2>Buenas prácticas</h2>
+
+    <h3>Hecho documentado</h3>
+    <ul>
+      <li>Google recomienda usar una <strong>contraseña única para cada cuenta</strong>.</li>
+      <li>Google recomienda <strong>cambiar las contraseñas comprometidas</strong> en cuanto sea posible.</li>
+      <li>Puedes <strong>activar o desactivar las alertas</strong> de contraseñas inseguras.</li>
+    </ul>
+
+    <h3>Recomendación</h3>
+    <ul>
+      <li>Activa la <strong>verificación en dos pasos</strong> en tu cuenta de Google para proteger el acceso al propio gestor.</li>
+      <li>Revisa <strong>periódicamente</strong> la comprobación de contraseñas.</li>
+      <li><strong>No reutilices contraseñas</strong>, aunque el sitio parezca poco importante.</li>
+    </ul>
+
+    <h3>Inferencia</h3>
+    <div class="callout warn">
+      <p>Si pierdes el acceso a tu cuenta de Google, <strong>pierdes el acceso a las contraseñas sincronizadas</strong>. Por eso es importante tener configurados métodos de recuperación (teléfono, correo alternativo…).</p>
+    </div>
+
+    <h3>Información no confirmada</h3>
+    <div class="callout bad">
+      <p>La documentación oficial <strong>no especifica</strong> si el Gestor de contraseñas de Google está disponible en todos los países ni si todas las funciones están disponibles en todas las versiones de Android.</p>
+    </div>
+  </article>
+
+  <article class="card">
+    <h2>Tabla resumen: qué sé hacer ahora</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Acción</th><th>Dónde se hace</th><th>Nivel</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Abrir el gestor</td><td>Android / Chrome / web</td><td>2</td></tr>
+          <tr><td>Guardar una contraseña nueva</td><td>Al registrarte, o manualmente</td><td>3</td></tr>
+          <tr><td>Consultar una contraseña</td><td>Gestor, icono del ojo 👁</td><td>4</td></tr>
+          <tr><td>Buscar una contraseña</td><td>Gestor, icono de lupa 🔍</td><td>4</td></tr>
+          <tr><td>Modificar una contraseña</td><td>Gestor, icono de lápiz ✏️</td><td>4</td></tr>
+          <tr><td>Eliminar una contraseña</td><td>Gestor, icono de papelera 🗑️</td><td>4</td></tr>
+          <tr><td>Comprobar la seguridad</td><td>Comprobación de contraseñas</td><td>5</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </article>
+
+  <article class="card">
+    <h2>Diccionario</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Término</th><th>Definición</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Gestor de contraseñas</strong></td><td>Herramienta que guarda y rellena tus contraseñas por ti.</td></tr>
+          <tr><td><strong>Autocompletado</strong></td><td>Función que rellena automáticamente usuario y contraseña en los formularios de inicio de sesión.</td></tr>
+          <tr><td><strong>Sincronización</strong></td><td>Hacer que tus contraseñas estén disponibles en todos tus dispositivos con tu cuenta de Google.</td></tr>
+          <tr><td><strong>Cuenta de Google</strong></td><td>Tu identidad digital de Google. Es necesaria para usar el gestor con sincronización.</td></tr>
+          <tr><td><strong>Contraseña guardada</strong></td><td>Una contraseña que has aceptado almacenar en el gestor.</td></tr>
+          <tr><td><strong>Contraseña comprometida</strong></td><td>Contraseña que ha aparecido en una filtración de datos pública.</td></tr>
+          <tr><td><strong>Contraseña débil</strong></td><td>Contraseña fácil de adivinar, como «123456» o «contraseña».</td></tr>
+          <tr><td><strong>Contraseña reutilizada</strong></td><td>La misma contraseña usada en más de un sitio.</td></tr>
+          <tr><td><strong>Comprobación de contraseñas</strong></td><td>Función que audita tus contraseñas guardadas y te avisa de problemas.</td></tr>
+          <tr><td><strong>Llave de acceso (passkey)</strong></td><td>Método de inicio de sesión sin contraseña que usa tu huella o tu cara.</td></tr>
+          <tr><td><strong>Chrome</strong></td><td>El navegador de Google. Es una de las formas de acceder al gestor.</td></tr>
+          <tr><td><strong>Verificación en dos pasos (2FA)</strong></td><td>Capa extra de seguridad que pide un segundo método de verificación además de la contraseña.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </article>
+
+  <article class="card">
+    <h2>Preguntas frecuentes</h2>
+
+    <details>
+      <summary>¿Google puede ver mis contraseñas?</summary>
+      <div class="details-body">
+        <p>No. Según la documentación oficial, Google no comparte tus contraseñas con Google ni con terceros: no puede leer las contraseñas guardadas.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>¿El gestor sustituye a la verificación en dos pasos?</summary>
+      <div class="details-body">
+        <p>No. Son herramientas complementarias. El gestor guarda tu contraseña; el 2FA añade una segunda prueba de identidad.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>¿Puedo usar el gestor sin cuenta de Google?</summary>
+      <div class="details-body">
+        <p>Puedes guardar contraseñas en el dispositivo, pero no tendrás sincronización entre dispositivos. Para sincronizar necesitas una cuenta de Google.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>¿Me protege frente a virus o malware?</summary>
+      <div class="details-body">
+        <p>No. El gestor protege frente a la pérdida de memoria, la reutilización de contraseñas y las contraseñas débiles, pero no frente a un malware que capture lo que escribes en pantalla.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>¿Qué pasa si pierdo el acceso a mi cuenta de Google?</summary>
+      <div class="details-body">
+        <p>Perderías el acceso a las contraseñas sincronizadas. Por eso conviene tener configurados métodos de recuperación. <em>(Esto es una inferencia razonada, no una cita literal de la documentación.)</em></p>
+      </div>
+    </details>
+
+    <details>
+      <summary>¿Está disponible en todos los países?</summary>
+      <div class="details-body">
+        <p>La documentación oficial no lo especifica. Es información no confirmada.</p>
+      </div>
+    </details>
+  </article>
+
+  <div class="callout ok">
+    <p><strong>Has terminado el tutorial.</strong> Ahora sabes utilizar el Gestor de contraseñas de Google por ti mismo.</p>
+  </div>
+
+</section>
+
+<!-- ============================================================
+     PANEL: FUENTES
+     ============================================================ -->
+<section class="panel" id="p-fuentes" role="tabpanel" aria-label="Fuentes">
+
+  <h2 class="panel-title">Fuentes oficiales</h2>
+
+  <article class="card">
+    <h2>Documentación de Google utilizada</h2>
+    <p>Toda la información de este tutorial procede de las siguientes fuentes oficiales:</p>
+    <ul>
+      <li>
+        <strong>Fuente principal:</strong><br>
+        <a href="https://support.google.com/accounts/answer/6208650?hl=es&amp;co=GENIE.Platform%3DAndroid" target="_blank" rel="noopener noreferrer">https://support.google.com/accounts/answer/6208650?hl=es&amp;co=GENIE.Platform%3DAndroid</a>
+      </li>
+      <li>
+        <strong>Gestionar contraseñas en Chrome:</strong><br>
+        <a href="https://support.google.com/chrome/answer/95606" target="_blank" rel="noopener noreferrer">https://support.google.com/chrome/answer/95606</a>
+      </li>
+      <li>
+        <strong>Cambiar contraseñas comprometidas:</strong><br>
+        <a href="https://support.google.com/accounts/answer/9457609" target="_blank" rel="noopener noreferrer">https://support.google.com/accounts/answer/9457609</a>
+      </li>
+      <li>
+        <strong>Usar contraseñas y llaves de acceso en tus dispositivos:</strong><br>
+        <a href="https://support.google.com/chrome/answer/6197437" target="_blank" rel="noopener noreferrer">https://support.google.com/chrome/answer/6197437</a>
+      </li>
+      <li>
+        <strong>Guardar, gestionar y proteger tus contraseñas (versión general):</strong><br>
+        <a href="https://support.google.com/accounts/answer/6208650" target="_blank" rel="noopener noreferrer">https://support.google.com/accounts/answer/6208650</a>
+      </li>
+    </ul>
+
+    <div class="callout">
+      <p><strong>Nota:</strong> las interfaces de Google pueden cambiar con el tiempo. Si una ruta no coincide exactamente, usa la barra de búsqueda de la propia aplicación.</p>
+    </div>
+  </article>
+
+  <article class="card">
+    <h2>Nivel de respaldo de cada afirmación</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Tipo</th><th>Significado</th><th>Ejemplo en este tutorial</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><span class="badge ok">Documentado</span></td><td>Aparece literalmente en la documentación oficial.</td><td>«Google Password Manager te ayuda a usar contraseñas seguras y únicas para todas tus cuentas online».</td></tr>
+          <tr><td><span class="badge warn">Recomendación</span></td><td>Buena práctica sugerida, no obligatoria.</td><td>Activa la verificación en dos pasos en tu cuenta de Google.</td></tr>
+          <tr><td><span class="badge">Inferencia</span></td><td>Deducción razonada a partir de lo documentado.</td><td>Si pierdes el acceso a tu cuenta, pierdes las contraseñas sincronizadas.</td></tr>
+          <tr><td><span class="badge bad">No confirmado</span></td><td>La documentación no lo aclara.</td><td>Disponibilidad del gestor en todos los países.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </article>
+
+</section>
+
+<!-- ============================================================
+     PANEL: CRÉDITOS
+     ============================================================ -->
+<section class="panel" id="p-creditos" role="tabpanel" aria-label="Créditos">
+
+  <h2 class="panel-title">Créditos</h2>
+
+  <div class="hero-svg-mount" data-svg-hero="true" role="img"
+       aria-label="Animación: una lista de contraseñas guardadas viaja cifrada hasta un escudo de seguridad que la protege"></div>
+  <p class="hero-caption">Tus contraseñas guardadas viajan cifradas y quedan protegidas bajo tu cuenta de Google.</p>
+
+  <div class="author-card">
+    <p class="author-name">Rubén Sbarsky</p>
+    <p class="author-role">Autor del tutorial</p>
+
+    <div class="meta-row">
+      <div class="meta-box">
+        <span>Fecha y hora de creación</span>
+        <strong>05/10/2026 — 10:30:00</strong>
+      </div>
+      <div class="meta-box">
+        <span>Versión del archivo</span>
+        <strong>V001</strong>
+      </div>
+    </div>
+  </div>
+
+  <article class="card">
+    <h2>Sobre este tutorial</h2>
+    <p>Tutorial HTML interactivo de un solo archivo, sin dependencias externas ni conexión a Internet. Funciona abriéndolo directamente en cualquier navegador moderno.</p>
+    <p style="margin-bottom:0">Contenido basado íntegramente en la documentación oficial de Google listada en la pestaña FUENTES.</p>
+  </article>
+
+  <article class="card">
+    <h2>Novedades de esta versión</h2>
+    <ul>
+      <li><strong>V001</strong> — Versión inicial del tutorial.</li>
+      <li>SVG animado único, reutilizado en INICIO y en CRÉDITOS desde una sola plantilla.</li>
+      <li>Pestañas reales con navegación por hash (<code>#p-creditos</code>).</li>
+      <li>Buscador con resaltado, A−/A+, modo oscuro/claro, impresión a PDF y checklist guardado en <code>localStorage</code>.</li>
+    </ul>
+  </article>
+
+</section>
+
+</main>
+
+<button class="to-top" id="toTop" type="button" title="Volver arriba" aria-label="Volver arriba">↑</button>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ==========================================================
+     1. SVG HERO — una sola plantilla, montada con innerHTML
+     ========================================================== */
+  var seq = 0;
+  var TPL = null;
+  var imgMode = false;
+
+  function template() {
+    if (TPL) { return TPL; }
+    var src = document.getElementById('svgHeroSource');
+    if (!src) { return { defs: '', art: '' }; }
+
+    var defsNode = src.querySelector('defs');
+    var artNode = src.querySelector('#svgHero');
+    if (!defsNode || !artNode) { return { defs: '', art: '' }; }
+
+    var d = defsNode.cloneNode(true);
+    var g = artNode.cloneNode(true);
+
+    var inner = d.querySelector('#svgHero');
+    if (inner && inner.parentNode) { inner.parentNode.removeChild(inner); }
+
+    g.removeAttribute('id');
+
+    TPL = { defs: d.innerHTML, art: g.outerHTML };
+
+    /* Eliminar el SVG fuente para que no siga animándose oculto */
+    if (src.parentNode) { src.parentNode.removeChild(src); }
+
+    return TPL;
+  }
+
+  function markup(uid) {
+    var t = template();
+    var s = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 260" ' +
+            'preserveAspectRatio="xMidYMid meet" focusable="false" aria-hidden="true" ' +
+            'style="display:block;width:100%;height:auto">' +
+            '<defs>' + t.defs + '</defs>' + t.art + '</svg>';
+
+    /* Ids únicos por copia para degradados y filtros */
+    ['gBg', 'gAcc', 'fGlow'].forEach(function (id) {
+      s = s.split('id="' + id + '"').join('id="' + id + '-' + uid + '"')
+           .split('url(#' + id + ')').join('url(#' + id + '-' + uid + ')');
+    });
+    return s;
+  }
+
+  function mountOne(m) {
+    m.textContent = '';
+
+    if (imgMode) {
+      var im = new Image();
+      im.alt = '';
+      im.src = 'data:image/svg+xml;charset=utf-8,' +
+               encodeURIComponent(markup('i' + (++seq)));
+      m.appendChild(im);
+      return;
+    }
+
+    m.innerHTML = markup('h' + (++seq));
+
+    var svg = m.querySelector('svg');
+    if (!svg) { return; }
+
+    try {
+      svg.setCurrentTime(0);
+      svg.unpauseAnimations();
+    } catch (e) { /* ignorar */ }
+
+    var t0 = 0;
+    try { t0 = svg.getCurrentTime(); } catch (e) { t0 = 0; }
+
+    /* Plan B: si el reloj del SVG no avanza, usar <img data:…> */
+    setTimeout(function () {
+      if (document.hidden) { return; }
+      if (m.querySelector('svg') !== svg) { return; }
+      var h = 0;
+      try { h = svg.getBoundingClientRect().height; } catch (e) { h = 0; }
+      if (h <= 0) { return; }
+      var t1 = 0;
+      try { t1 = svg.getCurrentTime(); } catch (e) { t1 = 0; }
+      if (t1 - t0 < 0.3) {
+        imgMode = true;
+        mountOne(m);
+      }
+    }, 1600);
+  }
+
+  function mountActive() {
+    var list = document.querySelectorAll('.panel.active [data-svg-hero]');
+    Array.prototype.forEach.call(list, function (m) { mountOne(m); });
+  }
+
+  function mountAll() {
+    var list = document.querySelectorAll('[data-svg-hero]');
+    Array.prototype.forEach.call(list, function (m) { mountOne(m); });
+  }
+
+  /* ==========================================================
+     2. PESTAÑAS
+     ========================================================== */
+  var panels = document.querySelectorAll('.panel');
+  var tabButtons = document.querySelectorAll('.tab');
+  var currentPanel = null;
+
+  function activateTab(id, updateHash) {
+    var found = false;
+
+    Array.prototype.forEach.call(panels, function (p) {
+      var on = (p.id === id);
+      if (on) { found = true; }
+      p.classList.toggle('active', on);
+    });
+
+    if (!found) { return; }
+
+    Array.prototype.forEach.call(tabButtons, function (b) {
+      var on = (b.getAttribute('data-target') === id);
+      b.classList.toggle('active', on);
+      b.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
+
+    currentPanel = id;
+
+    /* Montar el SVG DESPUÉS de marcar el panel como activo */
+    mountActive();
+
+    if (updateHash) {
+      try {
+        if (history.replaceState) { history.replaceState(null, '', '#' + id); }
+      } catch (e) { /* file:// puede bloquearlo */ }
+    }
+
+    try {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (e) {
+      window.scrollTo(0, 0);
+    }
+  }
+
+  Array.prototype.forEach.call(tabButtons, function (b) {
+    b.addEventListener('click', function () {
+      activateTab(b.getAttribute('data-target'), true);
+    });
+  });
+
+  window.addEventListener('hashchange', function () {
+    var id = (location.hash || '').replace('#', '');
+    if (id && document.getElementById(id) && document.getElementById(id).classList.contains('panel')) {
+      activateTab(id, false);
+    }
+  });
+
+  /* Panel inicial: por hash si existe, si no el primero */
+  (function initPanel() {
+    var id = (location.hash || '').replace('#', '');
+    var target = null;
+    if (id) {
+      var el = document.getElementById(id);
+      if (el && el.classList.contains('panel')) { target = id; }
+    }
+    if (!target) {
+      var first = document.querySelector('.panel');
+      target = first ? first.id : null;
+    }
+    if (target) { activateTab(target, false); }
+  })();
+
+  /* Red de seguridad: remonta el SVG si el panel visible lo tiene vacío */
+  setInterval(function () {
+    if (document.hidden) { return; }
+    var list = document.querySelectorAll('.panel.active [data-svg-hero]');
+    Array.prototype.forEach.call(list, function (m) {
+      if (!m.firstElementChild) { mountOne(m); }
+    });
+  }, 800);
+
+  /* ==========================================================
+     3. IMPRIMIR / PDF
+     ========================================================== */
+  var closedDetails = [];
+
+  function openAllDetails() {
+    closedDetails = [];
+    var all = document.querySelectorAll('details');
+    Array.prototype.forEach.call(all, function (d) {
+      if (!d.open) {
+        closedDetails.push(d);
+        d.open = true;
+      }
+    });
+  }
+
+  function restoreDetails() {
+    closedDetails.forEach(function (d) { d.open = false; });
+    closedDetails = [];
+  }
+
+  function pauseAllSvg() {
+    var mounts = document.querySelectorAll('[data-svg-hero]');
+    Array.prototype.forEach.call(mounts, function (m) {
+      if (!m.firstElementChild) { mountOne(m); }
+      var svg = m.querySelector('svg');
+      if (svg) {
+        try {
+          svg.pauseAnimations();
+          svg.setCurrentTime(1.5); /* fotograma completo */
+        } catch (e) { /* ignorar */ }
+      }
+    });
+  }
+
+  function resumeAllSvg() {
+    var list = document.querySelectorAll('[data-svg-hero] svg');
+    Array.prototype.forEach.call(list, function (svg) {
+      try { svg.unpauseAnimations(); } catch (e) { /* ignorar */ }
+    });
+  }
+
+  function beforePrintSetup() {
+    openAllDetails();
+    pauseAllSvg();
+  }
+
+  function afterPrintSetup() {
+    restoreDetails();
+    resumeAllSvg();
+  }
+
+  window.addEventListener('beforeprint', beforePrintSetup);
+  window.addEventListener('afterprint', afterPrintSetup);
+
+  var printBtn = document.getElementById('printBtn');
+  var toastEl = document.getElementById('toast');
+  var toastTimer = null;
+
+  function showToast(msg) {
+    if (!toastEl) { return; }
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    if (toastTimer) { clearTimeout(toastTimer); }
+    toastTimer = setTimeout(function () {
+      toastEl.classList.remove('show');
+    }, 7000);
+  }
+
+  var isFramed = false;
+  try { isFramed = (window.self !== window.top); } catch (e) { isFramed = true; }
+
+  if (printBtn) {
+    printBtn.addEventListener('click', function () {
+      beforePrintSetup();
+
+      var failed = false;
+      try {
+        window.print();
+      } catch (e) {
+        failed = true;
+      }
+
+      setTimeout(function () {
+        afterPrintSetup();
+        if (failed) {
+          showToast('No se ha podido abrir el diálogo de impresión. Abre este archivo directamente en el navegador y pulsa Ctrl+P / Cmd+P.');
+        } else if (isFramed) {
+          showToast('Si no se ha abierto el diálogo de impresión: abre este archivo directamente en el navegador (no dentro de un visor) y pulsa Ctrl+P / Cmd+P.');
+        }
+      }, 900);
+    });
+  }
+
+  /* ==========================================================
+     4. TAMAÑO DE TEXTO
+     ========================================================== */
+  var SIZES = [14, 16, 18, 20, 22];
+  var sizeIdx = 1;
+
+  function applySize() {
+    document.documentElement.style.fontSize = SIZES[sizeIdx] + 'px';
+    try { localStorage.setItem('gp_fs', String(sizeIdx)); } catch (e) { /* ignorar */ }
+  }
+
+  try {
+    var savedFs = parseInt(localStorage.getItem('gp_fs'), 10);
+    if (!isNaN(savedFs) && savedFs >= 0 && savedFs < SIZES.length) { sizeIdx = savedFs; }
+  } catch (e) { /* ignorar */ }
+  applySize();
+
+  var fontMinus = document.getElementById('fontMinus');
+  var fontPlus = document.getElementById('fontPlus');
+
+  if (fontMinus) {
+    fontMinus.addEventListener('click', function () {
+      if (sizeIdx > 0) { sizeIdx--; applySize(); }
+    });
+  }
+  if (fontPlus) {
+    fontPlus.addEventListener('click', function () {
+      if (sizeIdx < SIZES.length - 1) { sizeIdx++; applySize(); }
+    });
+  }
+
+  /* ==========================================================
+     5. MODO OSCURO / CLARO
+     ========================================================== */
+  var themeBtn = document.getElementById('themeBtn');
+
+  function applyTheme(mode) {
+    var light = (mode === 'light');
+    document.body.classList.toggle('light', light);
+    if (themeBtn) { themeBtn.textContent = light ? '☀️' : '🌙'; }
+    try { localStorage.setItem('gp_theme', mode); } catch (e) { /* ignorar */ }
+  }
+
+  var savedTheme = 'dark';
+  try { savedTheme = localStorage.getItem('gp_theme') || 'dark'; } catch (e) { savedTheme = 'dark'; }
+  applyTheme(savedTheme);
+
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function () {
+      applyTheme(document.body.classList.contains('light') ? 'dark' : 'light');
+    });
+  }
+
+  /* ==========================================================
+     6. BARRA DE PROGRESO Y VOLVER ARRIBA
+     ========================================================== */
+  var progressFill = document.getElementById('progressFill');
+  var toTop = document.getElementById('toTop');
+
+  function onScroll() {
+    var doc = document.documentElement;
+    var max = doc.scrollHeight - doc.clientHeight;
+    var pct = max > 0 ? (doc.scrollTop / max) * 100 : 0;
+    if (progressFill) { progressFill.style.width = pct + '%'; }
+    if (toTop) { toTop.classList.toggle('show', doc.scrollTop > 400); }
+  }
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  if (toTop) {
+    toTop.addEventListener('click', function () {
+      try { window.scrollTo({ top: 0, behavior: 'smooth' }); }
+      catch (e) { window.scrollTo(0, 0); }
+    });
+  }
+
+  /* ==========================================================
+     7. BUSCADOR
+     ========================================================== */
+  var searchInput = document.getElementById('searchInput');
+  var searchCount = document.getElementById('searchCount');
+  var marks = [];
+
+  function clearHighlights() {
+    marks.forEach(function (m) {
+      var parent = m.parentNode;
+      if (!parent) { return; }
+      parent.replaceChild(document.createTextNode(m.textContent), m);
+      parent.normalize();
+    });
+    marks = [];
+  }
+
+  function highlight(term) {
+    clearHighlights();
+    if (!term || term.length < 2) {
+      if (searchCount) { searchCount.textContent = ''; }
+      return;
+    }
+
+    var panelList = document.querySelectorAll('.panel');
+    var firstPanelWithMatch = null;
+    var total = 0;
+
+    Array.prototype.forEach.call(panelList, function (panel) {
+      var walker = document.createTreeWalker(
+        panel,
+        NodeFilter.SHOW_TEXT,
+        {
+          acceptNode: function (node) {
+            if (!node.nodeValue || !node.nodeValue.trim()) { return NodeFilter.FILTER_REJECT; }
+            var p = node.parentNode;
+            if (!p || p.nodeType !== 1) { return NodeFilter.FILTER_REJECT; }
+            var tag = p.nodeName.toLowerCase();
+            if (tag === 'script' || tag === 'style' || tag === 'svg' || tag === 'text') {
+              return NodeFilter.FILTER_REJECT;
+            }
+            if (p.closest && p.closest('[data-svg-hero]')) { return NodeFilter.FILTER_REJECT; }
+            return NodeFilter.FILTER_ACCEPT;
+          }
+        },
+        false
+      );
+
+      var nodes = [];
+      var n;
+      while ((n = walker.nextNode())) { nodes.push(n); }
+
+      nodes.forEach(function (node) {
+        var text = node.nodeValue;
+        var lower = text.toLowerCase();
+        var idx = lower.indexOf(term);
+        if (idx === -1) { return; }
+
+        var frag = document.createDocumentFragment();
+        var last = 0;
+
+        while (idx !== -1) {
+          if (idx > last) { frag.appendChild(document.createTextNode(text.slice(last, idx))); }
+          var mk = document.createElement('mark');
+          mk.className = 'search-hl';
+          mk.textContent = text.substr(idx, term.length);
+          frag.appendChild(mk);
+          marks.push(mk);
+          last = idx + term.length;
+          idx = lower.indexOf(term, last);
+          total++;
+        }
+
+        if (last < text.length) { frag.appendChild(document.createTextNode(text.slice(last))); }
+
+        if (node.parentNode) { node.parentNode.replaceChild(frag, node); }
+      });
+
+      if (!firstPanelWithMatch && panel.querySelector('.search-hl')) {
+        firstPanelWithMatch = panel;
+      }
+    });
+
+    if (searchCount) {
+      searchCount.textContent = total > 0 ? (total + ' resultado' + (total === 1 ? '' : 's')) : 'sin resultados';
+    }
+
+    if (firstPanelWithMatch && !firstPanelWithMatch.classList.contains('active')) {
+      activateTab(firstPanelWithMatch.id, true);
+    }
+
+    var firstMark = document.querySelector('.search-hl');
+    if (firstMark && firstMark.scrollIntoView) {
+      try { firstMark.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+      catch (e) { /* ignorar */ }
+    }
+  }
+
+  if (searchInput) {
+    var searchTimer = null;
+    searchInput.addEventListener('input', function () {
+      var value = searchInput.value.trim().toLowerCase();
+      if (searchTimer) { clearTimeout(searchTimer); }
+      searchTimer = setTimeout(function () { highlight(value); }, 220);
+    });
+
+    searchInput.addEventListener('keydown', function (ev) {
+      if (ev.key === 'Escape') {
+        searchInput.value = '';
+        clearHighlights();
+        if (searchCount) { searchCount.textContent = ''; }
+      }
+    });
+  }
+
+  /* ==========================================================
+     8. BOTONES COPIAR
+     ========================================================== */
+  function copyText(text, btn) {
+    function done() {
+      var original = btn.getAttribute('data-label') || btn.textContent;
+      btn.setAttribute('data-label', original);
+      btn.textContent = 'COPIADO ✓';
+      setTimeout(function () { btn.textContent = original; }, 1500);
+    }
+
+    function fallback() {
+      var ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed';
+      ta.style.left = '-9999px';
+      document.body.appendChild(ta);
+      ta.select();
+      var ok = false;
+      try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+      document.body.removeChild(ta);
+      if (ok) { done(); } else { showToast('No se pudo copiar automáticamente. Selecciona el texto y cópialo a mano.'); }
+    }
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done).catch(fallback);
+    } else {
+      fallback();
+    }
+  }
+
+  var copyButtons = document.querySelectorAll('.copyBtn');
+  Array.prototype.forEach.call(copyButtons, function (btn) {
+    btn.addEventListener('click', function () {
+      copyText(btn.getAttribute('data-copy') || '', btn);
+    });
+  });
+
+  /* ==========================================================
+     9. CHECKLIST CON localStorage
+     ========================================================== */
+  var checkBoxes = document.querySelectorAll('[data-check]');
+  var checkProgress = document.getElementById('checkProgress');
+  var savedChecks = {};
+
+  try {
+    savedChecks = JSON.parse(localStorage.getItem('gp_checks') || '{}') || {};
+  } catch (e) { savedChecks = {}; }
+
+  function saveChecks() {
+    try { localStorage.setItem('gp_checks', JSON.stringify(savedChecks)); } catch (e) { /* ignorar */ }
+  }
+
+  function updateCheckProgress() {
+    if (!checkProgress || !checkBoxes.length) { return; }
+    var done = 0;
+    Array.prototype.forEach.call(checkBoxes, function (b) { if (b.checked) { done++; } });
+    checkProgress.textContent = done + ' de ' + checkBoxes.length + ' completados';
+  }
+
+  Array.prototype.forEach.call(checkBoxes, function (b) {
+    var key = b.getAttribute('data-check');
+    if (savedChecks[key]) { b.checked = true; }
+    b.addEventListener('change', function () {
+      savedChecks[key] = b.checked;
+      saveChecks();
+      updateCheckProgress();
+    });
+  });
+  updateCheckProgress();
+
+  var resetChecks = document.getElementById('resetChecks');
+  if (resetChecks) {
+    resetChecks.addEventListener('click', function () {
+      savedChecks = {};
+      saveChecks();
+      Array.prototype.forEach.call(checkBoxes, function (b) { b.checked = false; });
+      updateCheckProgress();
+    });
+  }
+
+  /* ==========================================================
+     10. SEGURIDAD: si el SVG falla en el arranque, reintentar
+     ========================================================== */
+  setTimeout(function () {
+    var list = document.querySelectorAll('.panel.active [data-svg-hero]');
+    Array.prototype.forEach.call(list, function (m) {
+      if (!m.firstElementChild) { mountOne(m); }
+    });
+  }, 300);
+
+})();
+</script>
+</body>
+</html>
